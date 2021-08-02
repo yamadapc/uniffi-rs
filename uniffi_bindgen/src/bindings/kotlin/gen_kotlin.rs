@@ -12,9 +12,9 @@ use serde::{Deserialize, Serialize};
 use crate::interface::*;
 use crate::MergeWith;
 
-use self::backend::CodeType;
-use self::backend::TypeIdentifier;
-use self::backend::TypeOracle;
+use crate::bindings::backend::{ CodeType, TypeIdentifier, TypeOracle };
+
+mod enums;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -73,65 +73,19 @@ impl<'a> KotlinWrapper<'a> {
     }
 }
 
-mod backend {
-    use super::*;
-    use std::fmt;
-
-    pub type TypeIdentifier = Type;
-
-    pub trait TypeOracle {
-        fn find(&self, type_: &TypeIdentifier) -> Result<Box<dyn CodeType>, askama::Error>;
-    }
-
-    pub trait CodeType {
-        fn type_identifier(&self, oracle: &dyn TypeOracle) -> &TypeIdentifier;
-
-        fn type_label(&self, oracle: &dyn TypeOracle) -> Result<String, askama::Error>;
-        fn literal(&self, oracle: &dyn TypeOracle, literal: &Literal) -> Result<String, askama::Error>;
-        /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.
-        ///
-        /// Where possible, this delegates to a `lower()` method on the type itself, but special
-        /// handling is required for some compound data types.
-        fn lower(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
-
-        /// Get a Kotlin expression for writing a value into a byte buffer.
-        ///
-        /// Where possible, this delegates to a `write()` method on the type itself, but special
-        /// handling is required for some compound data types.
-        fn write(&self,
-            oracle: &dyn TypeOracle,
-            nm: &dyn fmt::Display,
-            target: &dyn fmt::Display,
-        ) -> Result<String, askama::Error>;
-
-        /// Get a Kotlin expression for lifting a value from something we received over the FFI.
-        ///
-        /// Where possible, this delegates to a `lift()` method on the type itself, but special
-        /// handling is required for some compound data types.
-        fn lift(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
-
-        /// Get a Kotlin expression for reading a value from a byte buffer.
-        ///
-        /// Where possible, this delegates to a `read()` method on the type itself, but special
-        /// handling is required for some compound data types.
-        fn read(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
-    }
-}
-
-
 struct FallbackCodeType {
     type_: TypeIdentifier,
 }
 
 impl FallbackCodeType {
     fn new(type_: TypeIdentifier) -> Self { Self { type_ } }
-}
 
-impl CodeType for FallbackCodeType {
     fn type_identifier(&self, _oracle: &dyn TypeOracle) -> &TypeIdentifier {
         &self.type_
     }
+}
 
+impl CodeType for FallbackCodeType {
     fn type_label(&self, oracle: &dyn TypeOracle) -> Result<String, askama::Error> {
         let type_ = self.type_identifier(oracle);
         legacy_kt::type_kt(type_)
@@ -168,6 +122,7 @@ pub struct KotlinTypeOracle;
 impl KotlinTypeOracle {
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         Box::new(match type_ {
+            // Type::Enum(id) => enums::EnumCodeType { id },
             _ => FallbackCodeType::new(type_),
         })
     }
@@ -184,11 +139,6 @@ impl TypeOracle for KotlinTypeOracle {
 mod filters {
     use super::*;
     use std::fmt;
-    use backend::TypeOracle;
-
-    lazy_static::lazy_static! {
-        static ref TYPE_ORACLE: KotlinTypeOracle = KotlinTypeOracle;
-    }
 
     fn oracle() -> impl TypeOracle {
         KotlinTypeOracle
