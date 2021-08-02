@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use crate::interface::*;
 use crate::MergeWith;
 
-use crate::bindings::backend::{ CodeType, TypeIdentifier, TypeOracle };
+use crate::bindings::backend::{ CodeType, TypeIdentifier, LanguageOracle };
 
 mod enum_;
 mod fallback;
@@ -76,9 +76,9 @@ impl<'a> KotlinWrapper<'a> {
 }
 
 #[derive(Default)]
-pub struct KotlinTypeOracle;
+pub struct KotlinLanguageOracle;
 
-impl KotlinTypeOracle {
+impl KotlinLanguageOracle {
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         match type_ {
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
@@ -87,7 +87,7 @@ impl KotlinTypeOracle {
     }
 }
 
-impl TypeOracle for KotlinTypeOracle {
+impl LanguageOracle for KotlinLanguageOracle {
     fn find(&self, type_: &TypeIdentifier) -> Result<Box<dyn CodeType>, askama::Error> {
         Ok(
             self.create_code_type(type_.clone())
@@ -130,14 +130,32 @@ impl TypeOracle for KotlinTypeOracle {
             }
         }
     }
+
+    fn ffi_type_label(&self, ffi_type: &FFIType) -> String {
+        match ffi_type {
+            // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
+            // support them yet. Thus, we use the signed variants to represent both signed and unsigned
+            // types from the component API.
+            FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
+            FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
+            FFIType::Int32 | FFIType::UInt32 => "Int".to_string(),
+            FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
+            FFIType::Float32 => "Float".to_string(),
+            FFIType::Float64 => "Double".to_string(),
+            FFIType::RustArcPtr => "Pointer".to_string(),
+            FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
+            FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            FFIType::ForeignCallback => "ForeignCallback".to_string(),
+        }
+    }
 }
 
 mod filters {
     use super::*;
     use std::fmt;
 
-    fn oracle() -> impl TypeOracle {
-        KotlinTypeOracle
+    fn oracle() -> impl LanguageOracle {
+        KotlinLanguageOracle
     }
 
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
@@ -184,21 +202,7 @@ mod filters {
 
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.
     pub fn type_ffi(type_: &FFIType) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
-            // support them yet. Thus, we use the signed variants to represent both signed and unsigned
-            // types from the component API.
-            FFIType::Int8 | FFIType::UInt8 => "Byte".to_string(),
-            FFIType::Int16 | FFIType::UInt16 => "Short".to_string(),
-            FFIType::Int32 | FFIType::UInt32 => "Int".to_string(),
-            FFIType::Int64 | FFIType::UInt64 => "Long".to_string(),
-            FFIType::Float32 => "Float".to_string(),
-            FFIType::Float64 => "Double".to_string(),
-            FFIType::RustArcPtr => "Pointer".to_string(),
-            FFIType::RustBuffer => "RustBuffer.ByValue".to_string(),
-            FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
-            FFIType::ForeignCallback => "ForeignCallback".to_string(),
-        })
+        Ok(oracle().ffi_type_label(type_))
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
