@@ -158,6 +158,11 @@ mod filters {
         KotlinLanguageOracle
     }
 
+    pub fn definition_code(type_: &Type) -> Result<Option<String>, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_)?.definition_code(&oracle))
+    }
+
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
         Ok(oracle.find(type_)?.type_label(&oracle))

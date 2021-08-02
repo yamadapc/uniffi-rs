@@ -46,4 +46,8 @@ impl CodeType for EnumCodeType {
     fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
+
+    fn definition_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
+        Some(format!("// {} Arrived!", self.type_label(oracle)))
+    }
 }

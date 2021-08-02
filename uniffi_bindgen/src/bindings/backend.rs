@@ -65,4 +65,16 @@ pub trait CodeType {
     /// Where possible, this delegates to a `read()` method on the type itself, but special
     /// handling is required for some compound data types.
     fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn;
+
+    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+        None
+    }
+
+    fn initialization_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+        None
+    }
+
+    fn import_code(&self,  _oracle: &dyn LanguageOracle) -> Option<String> {
+        None
+    }
 }

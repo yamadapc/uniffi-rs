@@ -493,9 +493,6 @@ internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}
     }
 }
 
-{% when Type::Enum with (enum_name) -%}
-{# Helpers for Enum types are defined inline with the Enum class #}
-
 {% when Type::Record with (record_name) -%}
 {# Helpers for Record types are defined inline with the Record class #}
 
@@ -508,5 +505,10 @@ internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}
 {% else %}
 {# This type cannot be lifted, lowered or serialized (yet) #}
 
-{% endmatch %}
-{% endfor %}
+{%- match typ|definition_code %}
+{%- when Some with (code) %}
+{{ code }}
+{%- else %}
+{%- endmatch %}
+{%- endmatch %}
+{%- endfor %}
