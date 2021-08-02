@@ -2,6 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashMap;
+use std::fmt;
+
 use anyhow::Result;
 use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
@@ -9,6 +12,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::interface::*;
 use crate::MergeWith;
+
+use self::backend::CodeType;
+use self::backend::TypeIdentifier;
+use self::backend::TypeOracle;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -67,13 +74,153 @@ impl<'a> KotlinWrapper<'a> {
     }
 }
 
+mod backend {
+    use super::*;
+    use std::fmt;
+
+    pub type TypeIdentifier = Type;
+
+    pub trait TypeOracle {
+        fn find(&self, type_: &TypeIdentifier) -> Result<Box<dyn CodeType>, askama::Error>;
+    }
+
+    pub trait CodeType {
+        fn type_identifier(&self) -> &TypeIdentifier;
+
+        fn type_label(&self) -> Result<String, askama::Error>;
+        fn literal(&self, literal: &Literal) -> Result<String, askama::Error>;
+        /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.
+        ///
+        /// Where possible, this delegates to a `lower()` method on the type itself, but special
+        /// handling is required for some compound data types.
+        fn lower(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
+
+        /// Get a Kotlin expression for writing a value into a byte buffer.
+        ///
+        /// Where possible, this delegates to a `write()` method on the type itself, but special
+        /// handling is required for some compound data types.
+        fn write(&self,
+            nm: &dyn fmt::Display,
+            target: &dyn fmt::Display,
+        ) -> Result<String, askama::Error>;
+
+        /// Get a Kotlin expression for lifting a value from something we received over the FFI.
+        ///
+        /// Where possible, this delegates to a `lift()` method on the type itself, but special
+        /// handling is required for some compound data types.
+        fn lift(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
+
+        /// Get a Kotlin expression for reading a value from a byte buffer.
+        ///
+        /// Where possible, this delegates to a `read()` method on the type itself, but special
+        /// handling is required for some compound data types.
+        fn read(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
+    }
+}
+
+
+struct FallbackCodeType {
+    type_: backend::TypeIdentifier,
+}
+
+impl FallbackCodeType {
+    fn new(type_: backend::TypeIdentifier) -> Self { Self { type_ } }
+}
+
+impl CodeType for FallbackCodeType {
+    fn type_identifier(&self) -> &TypeIdentifier {
+        &self.type_
+    }
+
+    fn type_label(&self) -> Result<String, askama::Error> {
+        legacy_kt::type_kt(self.type_identifier())
+    }
+
+    fn literal(&self, literal: &Literal) -> Result<String, askama::Error> {
+        legacy_kt::literal_kt(literal)
+    }
+
+    fn lower(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        legacy_kt::lower_kt(nm, self.type_identifier())
+    }
+
+    fn write(&self,
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+    ) -> Result<String, askama::Error> {
+        legacy_kt::write_kt(nm, target, self.type_identifier())
+    }
+
+    fn lift(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        legacy_kt::lift_kt(nm, self.type_identifier())
+    }
+
+    fn read(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        legacy_kt::read_kt(nm, self.type_identifier())
+    }
+}
+
+#[derive(Default)]
+struct KotlinTypeOracle;
+
+impl KotlinTypeOracle {
+    fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
+        Box::new(match type_ {
+            _ => FallbackCodeType::new(type_),
+        })
+    }
+}
+
+impl TypeOracle for KotlinTypeOracle {
+    fn find(&self, type_: &TypeIdentifier) -> Result<Box<dyn CodeType>, askama::Error> {
+        Ok(
+            self.create_code_type(type_.clone())
+        )
+    }
+}
+
 mod filters {
     use super::*;
     use std::fmt;
 
-    /// Get the Kotlin syntax for representing a given api-level `Type`.
+    lazy_static::lazy_static! {
+        static ref TYPE_ORACLE: KotlinTypeOracle = KotlinTypeOracle;
+    }
+
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
-        legacy_kt::type_kt(type_)
+        TYPE_ORACLE.find(type_)?.type_label()
+    }
+
+    pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        TYPE_ORACLE.find(type_)?.lower(nm)
+    }
+
+    pub fn write_kt(
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+        type_: &Type,
+    ) -> Result<String, askama::Error> {
+        TYPE_ORACLE.find(type_)?.write(nm, target)
+    }
+
+    pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        TYPE_ORACLE.find(type_)?.lift(nm)
+    }
+
+    pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
+        let type_ = match literal {
+            Literal::Enum(_, type_) => type_,
+            Literal::Int(_, _, type_) => type_,
+            Literal::UInt(_, _, type_) => type_,
+            Literal::Float(_, type_) => type_,
+            _ => return legacy_kt::literal_kt(literal),
+        };
+
+        TYPE_ORACLE.find(type_)?.literal(literal)
+    }
+
+    pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
+        TYPE_ORACLE.find(type_)?.read(nm)
     }
 
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.
@@ -93,10 +240,6 @@ mod filters {
             FFIType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FFIType::ForeignCallback => "ForeignCallback".to_string(),
         })
-    }
-
-    pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
-        legacy_kt::literal_kt(literal)
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
@@ -134,42 +277,6 @@ mod filters {
                 Ok(kt_exc_name)
             }
         }
-    }
-
-    /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.
-    ///
-    /// Where possible, this delegates to a `lower()` method on the type itself, but special
-    /// handling is required for some compound data types.
-    pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        legacy_kt::lower_kt(nm, type_)
-    }
-
-    /// Get a Kotlin expression for writing a value into a byte buffer.
-    ///
-    /// Where possible, this delegates to a `write()` method on the type itself, but special
-    /// handling is required for some compound data types.
-    pub fn write_kt(
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-        type_: &Type,
-    ) -> Result<String, askama::Error> {
-        legacy_kt::write_kt(nm, target, type_)
-    }
-
-    /// Get a Kotlin expression for lifting a value from something we received over the FFI.
-    ///
-    /// Where possible, this delegates to a `lift()` method on the type itself, but special
-    /// handling is required for some compound data types.
-    pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        legacy_kt::lift_kt(nm, type_)
-    }
-
-    /// Get a Kotlin expression for reading a value from a byte buffer.
-    ///
-    /// Where possible, this delegates to a `read()` method on the type itself, but special
-    /// handling is required for some compound data types.
-    pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
-        legacy_kt::read_kt(nm, type_)
     }
 }
 
