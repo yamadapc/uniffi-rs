@@ -71,6 +71,10 @@ pub struct KotlinWrapper<'a> {
 }
 impl<'a> KotlinWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
+        // I _think_ I want to make this the holder of the LanguageOracle, which holds the CI.
+        // I haven't quite worked out if each type's CodeType should be one type (with defintion_code and lift/lower calling)
+        // or two (e.g. enums_::CodeType, enums_::CodeDeclType). a CodeDecl type would be an ideal place to put an askama Template definition,
+        //
         Self { config, ci }
     }
 }
@@ -80,6 +84,10 @@ pub struct KotlinLanguageOracle;
 
 impl KotlinLanguageOracle {
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
+        // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
+        // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
+
+        // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn LanguageOracle
         match type_ {
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             _ => Box::new(fallback::FallbackCodeType::new(type_)),
