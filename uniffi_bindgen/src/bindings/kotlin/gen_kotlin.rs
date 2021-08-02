@@ -14,7 +14,8 @@ use crate::MergeWith;
 
 use crate::bindings::backend::{ CodeType, TypeIdentifier, TypeOracle };
 
-mod enums;
+mod enum_;
+mod fallback;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -73,62 +74,14 @@ impl<'a> KotlinWrapper<'a> {
     }
 }
 
-struct FallbackCodeType {
-    type_: TypeIdentifier,
-}
-
-impl FallbackCodeType {
-    fn new(type_: TypeIdentifier) -> Self { Self { type_ } }
-
-    fn type_identifier(&self, _oracle: &dyn TypeOracle) -> &TypeIdentifier {
-        &self.type_
-    }
-}
-
-impl CodeType for FallbackCodeType {
-    fn type_label(&self, oracle: &dyn TypeOracle) -> Result<String, askama::Error> {
-        let type_ = self.type_identifier(oracle);
-        legacy_kt::type_kt(type_)
-    }
-
-    fn canonical_name(&self, oracle: &dyn TypeOracle) -> Result<String, askama::Error> {
-        let type_ = self.type_identifier(oracle);
-        Ok(type_.canonical_name())
-    }
-
-    fn literal(&self, _oracle: &dyn TypeOracle, literal: &Literal) -> Result<String, askama::Error> {
-        legacy_kt::literal_kt(literal)
-    }
-
-    fn lower(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        legacy_kt::lower_kt(nm, self.type_identifier(oracle))
-    }
-
-    fn write(&self,
-        oracle: &dyn TypeOracle,
-        nm: &dyn fmt::Display,
-        target: &dyn fmt::Display,
-    ) -> Result<String, askama::Error> {
-        legacy_kt::write_kt(nm, target, self.type_identifier(oracle))
-    }
-
-    fn lift(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        legacy_kt::lift_kt(nm, self.type_identifier(oracle))
-    }
-
-    fn read(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        legacy_kt::read_kt(nm, self.type_identifier(oracle))
-    }
-}
-
 #[derive(Default)]
 pub struct KotlinTypeOracle;
 
 impl KotlinTypeOracle {
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         match type_ {
-            Type::Enum(id) => Box::new(enums::EnumCodeType::new(id)),
-            _ => Box::new(FallbackCodeType::new(type_)),
+            Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
+            _ => Box::new(fallback::FallbackCodeType::new(type_)),
         }
     }
 }
