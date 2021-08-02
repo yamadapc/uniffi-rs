@@ -4,9 +4,7 @@
 
 use std::fmt;
 
-use askama::Error;
-
-use crate::bindings::backend::{CodeType, Literal, TypeOracle};
+use crate::bindings::backend::{CodeType, Literal, TypeOracle, StringReturn};
 
 pub struct EnumCodeType {
     id: String,
@@ -17,37 +15,35 @@ impl EnumCodeType {
 }
 
 impl CodeType for EnumCodeType {
-    fn type_label(&self, oracle: &dyn TypeOracle) -> Result<String, Error> {
+    fn type_label(&self, oracle: &dyn TypeOracle) -> StringReturn {
         oracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, oracle: &dyn TypeOracle) -> Result<String, askama::Error> {
-        Ok(format!("Enum{}", self.type_label(oracle)?))
+    fn canonical_name(&self, oracle: &dyn TypeOracle) -> StringReturn {
+        format!("Enum{}", self.type_label(oracle))
     }
 
-    fn literal(&self, oracle: &dyn TypeOracle, literal: &Literal) -> Result<String, Error> {
+    fn literal(&self, oracle: &dyn TypeOracle, literal: &Literal) -> StringReturn {
         if let Literal::Enum(v, _) = literal {
-            Ok(
-                format!("{}.{}", self.type_label(oracle)?, oracle.enum_variant(v)?)
-            )
+            format!("{}.{}", self.type_label(oracle), oracle.enum_variant(v))
         } else {
             unreachable!();
         }
     }
 
-    fn lower(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
-        Ok(format!("{}.lower()", oracle.var_name(nm)?))
+    fn lower(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> StringReturn {
+        format!("{}.lower()", oracle.var_name(nm))
     }
 
-    fn write(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> Result<String, Error> {
-        Ok(format!("{}.write({})", oracle.var_name(nm)?, target))
+    fn write(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> StringReturn {
+        format!("{}.write({})", oracle.var_name(nm), target)
     }
 
-    fn lift(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
-        Ok(format!("{}.lift({})", self.type_label(oracle)?, nm))
+    fn lift(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> StringReturn {
+        format!("{}.lift({})", self.type_label(oracle), nm)
     }
 
-    fn read(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
-        Ok(format!("{}.read({})", self.type_label(oracle)?, nm))
+    fn read(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> StringReturn {
+        format!("{}.read({})", self.type_label(oracle), nm)
     }
 }

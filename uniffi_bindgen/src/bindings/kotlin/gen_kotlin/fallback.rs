@@ -4,9 +4,7 @@
 
  use std::fmt;
 
- use askama::Error;
-
- use crate::bindings::backend::{CodeType, Literal, TypeIdentifier, TypeOracle};
+ use crate::bindings::backend::{CodeType, Literal, TypeIdentifier, TypeOracle, StringReturn};
  use super::legacy_kt;
 
 pub struct FallbackCodeType {
@@ -15,44 +13,38 @@ pub struct FallbackCodeType {
 
 impl FallbackCodeType {
     pub fn new(type_: TypeIdentifier) -> Self { Self { type_ } }
-
-    fn type_identifier(&self, _oracle: &dyn TypeOracle) -> &TypeIdentifier {
-        &self.type_
-    }
 }
 
 impl CodeType for FallbackCodeType {
-    fn type_label(&self, oracle: &dyn TypeOracle) -> Result<String, Error> {
-        let type_ = self.type_identifier(oracle);
-        legacy_kt::type_kt(type_)
+    fn type_label(&self, _oracle: &dyn TypeOracle) -> StringReturn {
+        legacy_kt::type_kt(&self.type_).unwrap()
     }
 
-    fn canonical_name(&self, oracle: &dyn TypeOracle) -> Result<String, Error> {
-        let type_ = self.type_identifier(oracle);
-        Ok(type_.canonical_name())
+    fn canonical_name(&self, _oracle: &dyn TypeOracle) -> StringReturn {
+        self.type_.canonical_name()
     }
 
-    fn literal(&self, _oracle: &dyn TypeOracle, literal: &Literal) -> Result<String, Error> {
-        legacy_kt::literal_kt(literal)
+    fn literal(&self, _oracle: &dyn TypeOracle, literal: &Literal) -> StringReturn {
+        legacy_kt::literal_kt(literal).unwrap()
     }
 
-    fn lower(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
-        legacy_kt::lower_kt(nm, self.type_identifier(oracle))
+    fn lower(&self, _oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> StringReturn {
+        legacy_kt::lower_kt(nm, &self.type_).unwrap()
     }
 
     fn write(&self,
-        oracle: &dyn TypeOracle,
+        _oracle: &dyn TypeOracle,
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
-    ) -> Result<String, Error> {
-        legacy_kt::write_kt(nm, target, self.type_identifier(oracle))
+    ) -> StringReturn {
+        legacy_kt::write_kt(nm, target, &self.type_).unwrap()
     }
 
-    fn lift(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
-        legacy_kt::lift_kt(nm, self.type_identifier(oracle))
+    fn lift(&self, _oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> StringReturn {
+        legacy_kt::lift_kt(nm, &self.type_).unwrap()
     }
 
-    fn read(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
-        legacy_kt::read_kt(nm, self.type_identifier(oracle))
+    fn read(&self, _oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> StringReturn {
+        legacy_kt::read_kt(nm, &self.type_).unwrap()
     }
 }
