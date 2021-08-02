@@ -91,6 +91,11 @@ impl CodeType for FallbackCodeType {
         legacy_kt::type_kt(type_)
     }
 
+    fn canonical_name(&self, oracle: &dyn TypeOracle) -> Result<String, askama::Error> {
+        let type_ = self.type_identifier(oracle);
+        Ok(type_.canonical_name())
+    }
+
     fn literal(&self, _oracle: &dyn TypeOracle, literal: &Literal) -> Result<String, askama::Error> {
         legacy_kt::literal_kt(literal)
     }
@@ -121,10 +126,10 @@ pub struct KotlinTypeOracle;
 
 impl KotlinTypeOracle {
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
-        Box::new(match type_ {
-            // Type::Enum(id) => enums::EnumCodeType { id },
-            _ => FallbackCodeType::new(type_),
-        })
+        match type_ {
+            Type::Enum(id) => Box::new(enums::EnumCodeType::new(id)),
+            _ => Box::new(FallbackCodeType::new(type_)),
+        }
     }
 }
 
@@ -133,6 +138,43 @@ impl TypeOracle for KotlinTypeOracle {
         Ok(
             self.create_code_type(type_.clone())
         )
+    }
+
+    /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
+    fn class_name(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_camel_case())
+    }
+
+    /// Get the idiomatic Kotlin rendering of a function name.
+    fn fn_name(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_mixed_case())
+    }
+
+    /// Get the idiomatic Kotlin rendering of a variable name.
+    fn var_name(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_mixed_case())
+    }
+
+    /// Get the idiomatic Kotlin rendering of an individual enum variant.
+    fn enum_variant(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        Ok(nm.to_string().to_shouty_snake_case())
+    }
+
+    /// Get the idiomatic Kotlin rendering of an exception name
+    ///
+    /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
+    /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
+    /// and is distinguished from an "Exception".
+    fn exception_name(&self, nm: &dyn fmt::Display) -> Result<String, askama::Error> {
+        let name = nm.to_string();
+        match name.strip_suffix("Error") {
+            None => Ok(name),
+            Some(stripped) => {
+                let mut kt_exc_name = stripped.to_owned();
+                kt_exc_name.push_str("Exception");
+                Ok(kt_exc_name)
+            }
+        }
     }
 }
 
@@ -207,22 +249,22 @@ mod filters {
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     pub fn class_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_camel_case())
+        oracle().class_name(nm)
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
     pub fn fn_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
+        oracle().fn_name(nm)
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
     pub fn var_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_mixed_case())
+        oracle().var_name(nm)
     }
 
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
     pub fn enum_variant_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        Ok(nm.to_string().to_shouty_snake_case())
+        oracle().enum_variant(nm)
     }
 
     /// Get the idiomatic Kotlin rendering of an exception name
@@ -231,15 +273,7 @@ mod filters {
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
     /// and is distinguished from an "Exception".
     pub fn exception_name_kt(nm: &dyn fmt::Display) -> Result<String, askama::Error> {
-        let name = nm.to_string();
-        match name.strip_suffix("Error") {
-            None => Ok(name),
-            Some(stripped) => {
-                let mut kt_exc_name = stripped.to_owned();
-                kt_exc_name.push_str("Exception");
-                Ok(kt_exc_name)
-            }
-        }
+        oracle().exception_name(nm)
     }
 }
 

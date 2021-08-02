@@ -2,44 +2,52 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::backend::{CodeType, TypeIdentifier, TypeOracle};
+use std::fmt;
+
+use askama::Error;
+
+use crate::bindings::backend::{CodeType, Literal, TypeOracle};
 
 pub struct EnumCodeType {
     id: String,
 }
 
-// impl CodeType for EnumCodeType {
-//     fn type_label(&self, oracle: &dyn TypeOracle) -> Result<String, askama::Error> {
+impl EnumCodeType {
+    pub fn new(id: String) -> Self { Self { id } }
+}
 
-//     }
-//     fn literal(&self, oracle: &dyn TypeOracle, literal: &Literal) -> Result<String, askama::Error> {
+impl CodeType for EnumCodeType {
+    fn type_label(&self, oracle: &dyn TypeOracle) -> Result<String, Error> {
+        oracle.class_name(&self.id)
+    }
 
-//     }
-//     /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.
-//     ///
-//     /// Where possible, this delegates to a `lower()` method on the type itself, but special
-//     /// handling is required for some compound data types.
-//     fn lower(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
+    fn canonical_name(&self, oracle: &dyn TypeOracle) -> Result<String, askama::Error> {
+        Ok(format!("Enum{}", self.type_label(oracle)?))
+    }
 
-//     /// Get a Kotlin expression for writing a value into a byte buffer.
-//     ///
-//     /// Where possible, this delegates to a `write()` method on the type itself, but special
-//     /// handling is required for some compound data types.
-//     fn write(&self,
-//         oracle: &dyn TypeOracle,
-//         nm: &dyn fmt::Display,
-//         target: &dyn fmt::Display,
-//     ) -> Result<String, askama::Error>;
+    fn literal(&self, oracle: &dyn TypeOracle, literal: &Literal) -> Result<String, Error> {
+        if let Literal::Enum(v, _) = literal {
+            Ok(
+                format!("{}.{}", self.type_label(oracle)?, oracle.enum_variant(v)?)
+            )
+        } else {
+            unreachable!();
+        }
+    }
 
-//     /// Get a Kotlin expression for lifting a value from something we received over the FFI.
-//     ///
-//     /// Where possible, this delegates to a `lift()` method on the type itself, but special
-//     /// handling is required for some compound data types.
-//     fn lift(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
+    fn lower(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
+        Ok(format!("{}.lower()", oracle.var_name(nm)?))
+    }
 
-//     /// Get a Kotlin expression for reading a value from a byte buffer.
-//     ///
-//     /// Where possible, this delegates to a `read()` method on the type itself, but special
-//     /// handling is required for some compound data types.
-//     fn read(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, askama::Error>;
-// }
+    fn write(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> Result<String, Error> {
+        Ok(format!("{}.write({})", oracle.var_name(nm)?, target))
+    }
+
+    fn lift(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
+        Ok(format!("{}.lift({})", self.type_label(oracle)?, nm))
+    }
+
+    fn read(&self, oracle: &dyn TypeOracle, nm: &dyn fmt::Display) -> Result<String, Error> {
+        Ok(format!("{}.read({})", self.type_label(oracle)?, nm))
+    }
+}
