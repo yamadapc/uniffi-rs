@@ -30,6 +30,10 @@ internal fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, RustBufferBuilder) -> U
 // values of that type in a buffer.
 
 {% for typ in ci.iter_types() %}
+{%- match typ|helper_code %}
+{%- when Some with (code) %}
+{{ code }}
+{%- else %}
 {% let canonical_type_name = typ.canonical_name()|class_name_kt %}
 {%- match typ -%}
 
@@ -248,40 +252,6 @@ internal fun Double.write(buf: RustBufferBuilder) {
     buf.putDouble(this)
 }
 
-{% when Type::String -%}
-
-internal fun String.Companion.lift(rbuf: RustBuffer.ByValue): String {
-    try {
-        val byteArr = ByteArray(rbuf.len)
-        rbuf.asByteBuffer()!!.get(byteArr)
-        return byteArr.toString(Charsets.UTF_8)
-    } finally {
-        RustBuffer.free(rbuf)
-    }
-}
-
-internal fun String.Companion.read(buf: ByteBuffer): String {
-    val len = buf.getInt()
-    val byteArr = ByteArray(len)
-    buf.get(byteArr)
-    return byteArr.toString(Charsets.UTF_8)
-}
-
-internal fun String.lower(): RustBuffer.ByValue {
-    val byteArr = this.toByteArray(Charsets.UTF_8)
-    // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
-    // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.
-    val rbuf = RustBuffer.alloc(byteArr.size)
-    rbuf.asByteBuffer()!!.put(byteArr)
-    return rbuf
-}
-
-internal fun String.write(buf: RustBufferBuilder) {
-    val byteArr = this.toByteArray(Charsets.UTF_8)
-    buf.putInt(byteArr.size)
-    buf.put(byteArr)
-}
-
 {% when Type::Timestamp -%}
 {% let type_name = typ|type_kt %}
 
@@ -467,7 +437,7 @@ internal fun read{{ canonical_type_name }}(buf: ByteBuffer): Map<String, {{ inne
     val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
     val len = buf.getInt()
     repeat(len) {
-        val k = String.read(buf)
+        val k = {{ "buf"|read_kt(Type::String) }}
         val v = {{ "buf"|read_kt(inner_type) }}
         items[k] = v
     }
@@ -488,7 +458,7 @@ internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}
     // which is important for compatibility with older android devices.
     // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
     v.forEach { (k, v) ->
-        k.write(buf)
+        {{ "k"|write_kt("buf", Type::String) }}
         {{ "v"|write_kt("buf", inner_type) }}
     }
 }
@@ -505,10 +475,7 @@ internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}
 {% else %}
 {# This type cannot be lifted, lowered or serialized (yet) #}
 
-{%- match typ|definition_code %}
-{%- when Some with (code) %}
-{{ code }}
-{%- else %}
 {%- endmatch %}
 {%- endmatch %}
-{%- endfor %}
+
+{% endfor %}

@@ -15,6 +15,7 @@ use crate::MergeWith;
 use crate::bindings::backend::{ CodeType, TypeIdentifier, LanguageOracle };
 
 mod enum_;
+mod string_;
 mod fallback;
 mod legacy_kt;
 
@@ -89,6 +90,7 @@ impl KotlinLanguageOracle {
 
         // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn LanguageOracle
         match type_ {
+            Type::String => Box::new(string_::StringCodeType),
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             _ => Box::new(fallback::FallbackCodeType::new(type_)),
         }
@@ -166,9 +168,9 @@ mod filters {
         KotlinLanguageOracle
     }
 
-    pub fn definition_code(type_: &Type) -> Result<Option<String>, askama::Error> {
+    pub fn helper_code(type_: &Type) -> Result<Option<String>, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_)?.definition_code(&oracle))
+        Ok(oracle.find(type_)?.helper_code(&oracle))
     }
 
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {

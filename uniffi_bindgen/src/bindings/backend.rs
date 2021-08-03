@@ -66,7 +66,19 @@ pub trait CodeType {
     /// handling is required for some compound data types.
     fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn;
 
-    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+    fn helper_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+        None
+    }
+
+    fn import_code(&self,  _oracle: &dyn LanguageOracle) -> Option<String> {
+        None
+    }
+}
+
+pub trait MemberDeclaration {
+    fn type_identifier(&self) -> TypeIdentifier;
+
+    fn import_code(&self,  _oracle: &dyn LanguageOracle) -> Option<String> {
         None
     }
 
@@ -74,7 +86,7 @@ pub trait CodeType {
         None
     }
 
-    fn import_code(&self,  _oracle: &dyn LanguageOracle) -> Option<String> {
+    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         None
     }
 }

@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{CodeType, Literal, LanguageOracle, StringReturn};
+use crate::{bindings::backend::{CodeType, Literal, LanguageOracle, StringReturn}, interface::Enum};
 
 pub struct EnumCodeType {
     id: String,
@@ -47,7 +47,11 @@ impl CodeType for EnumCodeType {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
 
-    fn definition_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
+    fn helper_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
         Some(format!("// {} Arrived!", self.type_label(oracle)))
     }
+}
+
+struct KotlinEnum<'enum_> {
+    pub inner: &'enum_ Enum
 }
