@@ -61,11 +61,6 @@ import kotlin.concurrent.withLock
 {% include "TopLevelFunctionTemplate.kt" %}
 {% endfor %}
 
-// Objects
-{% for obj in ci.iter_object_definitions() %}
-{% include "ObjectTemplate.kt" %}
-{% endfor %}
-
 // Callback Interfaces
 {% for cbi in ci.iter_callback_interface_definitions() %}
 {% include "CallbackInterfaceTemplate.kt" %}

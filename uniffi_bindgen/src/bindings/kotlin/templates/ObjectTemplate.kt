@@ -1,3 +1,5 @@
+{% import "macros.kt" as kt %}
+{%- let obj = self.inner() %}
 {% call kt::unsigned_types_annotation(obj) %}
 public interface {{ obj.name()|class_name_kt }}Interface {
     {% for meth in obj.methods() -%}
@@ -23,10 +25,10 @@ class {{ obj.name()|class_name_kt }}(
 
     /**
      * Disconnect the object from the underlying Rust object.
-     * 
+     *
      * It can be called more than once, but once called, interacting with the object
      * causes an `IllegalStateException`.
-     * 
+     *
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
     override protected fun freeRustArcPtr() {

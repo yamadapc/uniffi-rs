@@ -16,6 +16,7 @@ use crate::MergeWith;
 use crate::bindings::backend::{ CodeType, TypeIdentifier, LanguageOracle };
 
 mod enum_;
+mod object;
 mod string_;
 mod fallback;
 mod legacy_kt;
@@ -86,7 +87,12 @@ impl<'a> KotlinWrapper<'a> {
             self.ci
                 .iter_enum_definitions()
                 .into_iter()
-                .map(|e| Box::new(enum_::KotlinEnum::new(e)) as Box<dyn MemberDeclaration>)
+                .map(|inner| Box::new(enum_::KotlinEnum::new(inner)) as Box<dyn MemberDeclaration>)
+        ).chain(
+            self.ci
+                .iter_object_definitions()
+                .into_iter()
+                .map(|inner| Box::new(object::KotlinObject::new(inner)) as Box<dyn MemberDeclaration>)
         ).collect()
     }
 }
@@ -103,6 +109,7 @@ impl KotlinLanguageOracle {
         match type_ {
             Type::String => Box::new(string_::StringCodeType),
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
+            Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
             _ => Box::new(fallback::FallbackCodeType::new(type_)),
         }
     }
