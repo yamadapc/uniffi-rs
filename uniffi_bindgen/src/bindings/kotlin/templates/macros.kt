@@ -70,5 +70,5 @@
 
 // Add annotation if there are unsigned types
 {%- macro unsigned_types_annotation(member) -%}
-{% if member.contains_unsigned_types(ci) %}@ExperimentalUnsignedTypes{% endif %}
+{% if true %}@ExperimentalUnsignedTypes{% endif %}
 {%- endmacro -%}

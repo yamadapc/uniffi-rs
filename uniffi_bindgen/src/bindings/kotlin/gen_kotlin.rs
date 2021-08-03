@@ -9,6 +9,7 @@ use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
+use crate::bindings::backend::MemberDeclaration;
 use crate::interface::*;
 use crate::MergeWith;
 
@@ -69,6 +70,7 @@ impl MergeWith for Config {
 pub struct KotlinWrapper<'a> {
     config: Config,
     ci: &'a ComponentInterface,
+    oracle: KotlinLanguageOracle,
 }
 impl<'a> KotlinWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
@@ -76,7 +78,16 @@ impl<'a> KotlinWrapper<'a> {
         // I haven't quite worked out if each type's CodeType should be one type (with defintion_code and lift/lower calling)
         // or two (e.g. enums_::CodeType, enums_::CodeDeclType). a CodeDecl type would be an ideal place to put an askama Template definition,
         //
-        Self { config, ci }
+        Self { config, ci, oracle: Default::default() }
+    }
+
+    pub fn members(&self) -> Vec<Box<dyn MemberDeclaration + 'a>> {
+        Vec::new().into_iter().chain(
+            self.ci
+                .iter_enum_definitions()
+                .into_iter()
+                .map(|e| Box::new(enum_::KotlinEnum::new(e)) as Box<dyn MemberDeclaration>)
+        ).collect()
     }
 }
 
@@ -160,7 +171,7 @@ impl LanguageOracle for KotlinLanguageOracle {
     }
 }
 
-mod filters {
+pub mod filters {
     use super::*;
     use std::fmt;
 

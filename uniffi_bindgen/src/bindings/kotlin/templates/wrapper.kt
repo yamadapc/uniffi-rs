@@ -38,9 +38,14 @@ import kotlin.concurrent.withLock
 {% include "Helpers.kt" %}
 
 // Public interface members begin here.
-// Public facing enums
-{% for e in ci.iter_enum_definitions() %}
-{% include "EnumTemplate.kt" %}
+
+
+{% for m in self.members() %}
+{%- match m.definition_code(oracle) %}
+{% when Some with (code) %}
+{{ code }}
+{% else %}
+{% endmatch %}
 {%- endfor -%}
 
 // Error definitions

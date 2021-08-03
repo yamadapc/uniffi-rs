@@ -4,8 +4,11 @@
 
 use std::fmt;
 
-use crate::{bindings::backend::{CodeType, Literal, LanguageOracle, StringReturn}, interface::Enum};
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier};
+use crate::interface::Enum;
+use askama::Template;
 
+use super::filters;
 pub struct EnumCodeType {
     id: String,
 }
@@ -52,6 +55,26 @@ impl CodeType for EnumCodeType {
     }
 }
 
-struct KotlinEnum<'enum_> {
-    pub inner: &'enum_ Enum
+
+#[derive(Template)]
+#[template(syntax = "kt", escape = "none", path = "EnumTemplate.kt")]
+pub struct KotlinEnum {
+    pub inner: Enum
+}
+
+impl KotlinEnum {
+    pub fn new(inner:Enum) -> Self { Self { inner } }
+    pub fn inner(&self) -> &Enum {
+        &self.inner
+    }
+}
+
+impl MemberDeclaration for KotlinEnum {
+    fn type_identifier(&self) -> TypeIdentifier {
+        TypeIdentifier::Enum(self.inner.name().into())
+    }
+
+    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+        Some(self.render().unwrap())
+    }
 }
