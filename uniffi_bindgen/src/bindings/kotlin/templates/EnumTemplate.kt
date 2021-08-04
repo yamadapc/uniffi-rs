@@ -93,12 +93,7 @@ sealed class {{ e.name()|class_name_kt }}{% if self.contains_object_references()
             {%- for variant in e.variants() %}
             is {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }} -> {
                 {%- if variant.has_fields() %}
-                listOf<Any?>(
-                {%- for field in variant.fields() %}
-                    this.{{ field.name() }}{%- if !loop.last %}, {% endif -%}
-                {% endfor -%})
-                .filterIsInstance<Disposable>()
-                .forEach { it.destroy() }
+                {% call kt::destroy_fields(variant) %}
                 {% else -%}
                 // Nothing to destroy
                 {%- endif %}

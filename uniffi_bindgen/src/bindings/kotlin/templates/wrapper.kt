@@ -51,11 +51,6 @@ import kotlin.concurrent.withLock
 // Error definitions
 {% include "ErrorTemplate.kt" %}
 
-// Public facing records
-{%- for rec in ci.iter_record_definitions() %}
-{% include "RecordTemplate.kt" %}
-{% endfor %}
-
 // Namespace functions
 {% for func in ci.iter_function_definitions() %}
 {% include "TopLevelFunctionTemplate.kt" %}

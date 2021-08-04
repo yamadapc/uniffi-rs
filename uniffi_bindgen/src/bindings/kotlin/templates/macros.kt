@@ -76,3 +76,11 @@
 {%- macro unsigned_types_annotation(member) -%}
 {% if true %}@ExperimentalUnsignedTypes{% endif %}
 {%- endmacro -%}
+
+// Macro for destroying fields
+{%- macro destroy_fields(member) %}
+    Disposable.destroy(
+    {%- for field in member.fields() %}
+        this.{{ field.name() }}{%- if !loop.last %}, {% endif -%}
+    {% endfor -%})
+{%- endmacro -%}

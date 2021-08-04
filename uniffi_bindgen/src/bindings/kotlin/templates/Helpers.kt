@@ -13,6 +13,12 @@
 // helper method to execute a block and destroy the object at the end.
 interface Disposable {
     fun destroy()
+    companion object {
+        fun destroy(vararg args: Any?) {
+            args.filterIsInstance<Disposable>()
+                .forEach(Disposable::destroy)
+        }
+    }
 }
 
 inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
