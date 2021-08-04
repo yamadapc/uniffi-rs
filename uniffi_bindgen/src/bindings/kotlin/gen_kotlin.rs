@@ -21,7 +21,6 @@ mod legacy_kt;
 mod object;
 mod primitives;
 mod record;
-mod string_;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -115,8 +114,19 @@ impl KotlinLanguageOracle {
 
         // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn LanguageOracle
         match type_ {
-            Type::Boolean => Box::new(primitives::BoolCodeType),
-            Type::String => Box::new(string_::StringCodeType),
+            Type::UInt8 => Box::new(primitives::UInt8CodeType),
+            Type::Int8 => Box::new(primitives::Int8CodeType),
+            Type::UInt16 => Box::new(primitives::UInt16CodeType),
+            Type::Int16 => Box::new(primitives::Int16CodeType),
+            Type::UInt32 => Box::new(primitives::UInt32CodeType),
+            Type::Int32 => Box::new(primitives::Int32CodeType),
+            Type::UInt64 => Box::new(primitives::UInt64CodeType),
+            Type::Int64 => Box::new(primitives::Int64CodeType),
+            Type::Float32 => Box::new(primitives::Float32CodeType),
+            Type::Float64 => Box::new(primitives::Float64CodeType),
+            Type::Boolean => Box::new(primitives::BooleanCodeType),
+            Type::String => Box::new(primitives::StringCodeType),
+
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
