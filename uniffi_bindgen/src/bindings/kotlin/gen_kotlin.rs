@@ -13,14 +13,15 @@ use crate::bindings::backend::MemberDeclaration;
 use crate::interface::*;
 use crate::MergeWith;
 
-use crate::bindings::backend::{ CodeType, TypeIdentifier, LanguageOracle };
+use crate::bindings::backend::{CodeType, LanguageOracle, TypeIdentifier};
 
 mod enum_;
-mod object;
-mod record;
-mod string_;
 mod fallback;
 mod legacy_kt;
+mod object;
+mod primitives;
+mod record;
+mod string_;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
 // Note that this can only be used to control details of the Kotlin *that do not affect the underlying component*,
@@ -80,27 +81,27 @@ impl<'a> KotlinWrapper<'a> {
         // I haven't quite worked out if each type's CodeType should be one type (with defintion_code and lift/lower calling)
         // or two (e.g. enums_::CodeType, enums_::CodeDeclType). a CodeDecl type would be an ideal place to put an askama Template definition,
         //
-        Self { config, ci, oracle: Default::default() }
+        Self {
+            config,
+            ci,
+            oracle: Default::default(),
+        }
     }
 
     pub fn members(&self) -> Vec<Box<dyn MemberDeclaration + 'a>> {
         let ci = self.ci;
-        Vec::new().into_iter().chain(
-            ci
-                .iter_enum_definitions()
-                .into_iter()
-                .map(|inner| Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn MemberDeclaration>)
-        ).chain(
-            ci
-                .iter_object_definitions()
-                .into_iter()
-                .map(|inner| Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn MemberDeclaration>)
-        ).chain(
-            ci
-                .iter_record_definitions()
-                .into_iter()
-                .map(|inner| Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn MemberDeclaration>)
-        ).collect()
+        Vec::new()
+            .into_iter()
+            .chain(ci.iter_enum_definitions().into_iter().map(|inner| {
+                Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn MemberDeclaration>
+            }))
+            .chain(ci.iter_object_definitions().into_iter().map(|inner| {
+                Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn MemberDeclaration>
+            }))
+            .chain(ci.iter_record_definitions().into_iter().map(|inner| {
+                Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn MemberDeclaration>
+            }))
+            .collect()
     }
 }
 
@@ -114,6 +115,7 @@ impl KotlinLanguageOracle {
 
         // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn LanguageOracle
         match type_ {
+            Type::Boolean => Box::new(primitives::BoolCodeType),
             Type::String => Box::new(string_::StringCodeType),
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
@@ -125,9 +127,7 @@ impl KotlinLanguageOracle {
 
 impl LanguageOracle for KotlinLanguageOracle {
     fn find(&self, type_: &TypeIdentifier) -> Result<Box<dyn CodeType>, askama::Error> {
-        Ok(
-            self.create_code_type(type_.clone())
-        )
+        Ok(self.create_code_type(type_.clone()))
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).

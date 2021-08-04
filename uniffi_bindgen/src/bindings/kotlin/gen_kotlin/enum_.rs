@@ -4,7 +4,9 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier};
+use crate::bindings::backend::{
+    CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier,
+};
 use crate::interface::{ComponentInterface, Enum};
 use askama::Template;
 
@@ -40,7 +42,12 @@ impl CodeType for EnumCodeType {
         format!("{}.lower()", oracle.var_name(nm))
     }
 
-    fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> StringReturn {
+    fn write(
+        &self,
+        oracle: &dyn LanguageOracle,
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+    ) -> StringReturn {
         format!("{}.write({})", oracle.var_name(nm), target)
     }
 
@@ -53,10 +60,12 @@ impl CodeType for EnumCodeType {
     }
 
     fn helper_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
-        Some(format!("// Helper code for {} enum is found in EnumTemplate.kt", self.type_label(oracle)))
+        Some(format!(
+            "// Helper code for {} enum is found in EnumTemplate.kt",
+            self.type_label(oracle)
+        ))
     }
 }
-
 
 #[derive(Template)]
 #[template(syntax = "kt", escape = "none", path = "EnumTemplate.kt")]
@@ -67,7 +76,7 @@ pub struct KotlinEnum {
 }
 
 impl KotlinEnum {
-    pub fn new(inner:Enum, ci: &ComponentInterface) -> Self {
+    pub fn new(inner: Enum, ci: &ComponentInterface) -> Self {
         Self {
             contains_unsigned_types: inner.contains_unsigned_types(ci),
             contains_object_references: inner.contains_object_references(ci),

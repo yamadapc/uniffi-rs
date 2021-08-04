@@ -2,52 +2,57 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
- use std::fmt;
+use std::fmt;
 
- use crate::bindings::backend::{CodeType, Literal, LanguageOracle, StringReturn};
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, StringReturn};
 
- pub struct StringCodeType;
+pub struct StringCodeType;
 
- impl CodeType for StringCodeType {
-     fn type_label(&self, _oracle: &dyn LanguageOracle) -> StringReturn {
-         "String".into()
-     }
+impl CodeType for StringCodeType {
+    fn type_label(&self, _oracle: &dyn LanguageOracle) -> StringReturn {
+        "String".into()
+    }
 
-     fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
-         self.type_label(oracle)
-     }
+    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+        self.type_label(oracle)
+    }
 
-     fn literal(&self, _oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn {
-         if let Literal::String(v) = literal {
-             format!("\"{}\"", v)
-         } else {
-             unreachable!();
-         }
-     }
+    fn literal(&self, _oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn {
+        if let Literal::String(v) = literal {
+            format!("\"{}\"", v)
+        } else {
+            unreachable!();
+        }
+    }
 
-     fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
-         format!("StringInternals.lower({})", oracle.var_name(nm))
-     }
+    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+        format!("StringInternals.lower({})", oracle.var_name(nm))
+    }
 
-     fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> StringReturn {
-         format!("StringInternals.write({}, {})", oracle.var_name(nm), target)
-     }
+    fn write(
+        &self,
+        oracle: &dyn LanguageOracle,
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+    ) -> StringReturn {
+        format!("StringInternals.write({}, {})", oracle.var_name(nm), target)
+    }
 
-     fn lift(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
-         format!("StringInternals.lift({})", nm)
-     }
+    fn lift(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+        format!("StringInternals.lift({})", nm)
+    }
 
-     fn read(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
-         format!("StringInternals.read({})", nm)
-     }
+    fn read(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+        format!("StringInternals.read({})", nm)
+    }
 
-     fn helper_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
-         Some(HELPER_CODE.clone())
-     }
- }
+    fn helper_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+        Some(HELPER_CODE.clone())
+    }
+}
 
- lazy_static::lazy_static! {
-    static ref HELPER_CODE: String = r#"
+lazy_static::lazy_static! {
+   static ref HELPER_CODE: String = r#"
     internal object StringInternals {
         fun lower(s: String): RustBuffer.ByValue {
             val byteArr = s.toByteArray(Charsets.UTF_8)
@@ -82,4 +87,4 @@
         }
     }
     "#.to_string();
- }
+}

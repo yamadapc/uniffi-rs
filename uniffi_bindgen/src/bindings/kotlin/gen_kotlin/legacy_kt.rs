@@ -62,11 +62,7 @@ pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::E
             class_name_kt(&type_.canonical_name())?,
             nm,
         ),
-        Type::Optional(_)
-        | Type::Sequence(_)
-        | Type::Map(_)
-        | Type::Timestamp
-        | Type::Duration => {
+        Type::Optional(_) | Type::Sequence(_) | Type::Map(_) | Type::Timestamp | Type::Duration => {
             format!("lower{}({})", class_name_kt(&type_.canonical_name())?, nm,)
         }
         _ => format!("{}.lower()", nm),
@@ -90,16 +86,14 @@ pub fn write_kt(
             nm,
             target,
         ),
-        Type::Optional(_)
-        | Type::Sequence(_)
-        | Type::Map(_)
-        | Type::Timestamp
-        | Type::Duration => format!(
-            "write{}({}, {})",
-            class_name_kt(&type_.canonical_name())?,
-            nm,
-            target,
-        ),
+        Type::Optional(_) | Type::Sequence(_) | Type::Map(_) | Type::Timestamp | Type::Duration => {
+            format!(
+                "write{}({}, {})",
+                class_name_kt(&type_.canonical_name())?,
+                nm,
+                target,
+            )
+        }
         _ => format!("{}.write({})", nm, target),
     })
 }
@@ -116,16 +110,12 @@ pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Er
             class_name_kt(&type_.canonical_name())?,
             nm,
         ),
-        Type::Optional(_)
-        | Type::Sequence(_)
-        | Type::Map(_)
-        | Type::Timestamp
-        | Type::Duration => format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm),
+        Type::Optional(_) | Type::Sequence(_) | Type::Map(_) | Type::Timestamp | Type::Duration => {
+            format!("lift{}({})", class_name_kt(&type_.canonical_name())?, nm)
+        }
         _ => format!("{}.lift({})", type_kt(type_)?, nm),
     })
 }
-
-
 
 /// Get a Kotlin expression for reading a value from a byte buffer.
 ///
@@ -139,11 +129,9 @@ pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Er
             class_name_kt(&type_.canonical_name())?,
             nm,
         ),
-        Type::Optional(_)
-        | Type::Sequence(_)
-        | Type::Map(_)
-        | Type::Timestamp
-        | Type::Duration => format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm),
+        Type::Optional(_) | Type::Sequence(_) | Type::Map(_) | Type::Timestamp | Type::Duration => {
+            format!("read{}({})", class_name_kt(&type_.canonical_name())?, nm)
+        }
         _ => format!("{}.read({})", type_kt(type_)?, nm),
     })
 }

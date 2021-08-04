@@ -2,17 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
- use std::fmt;
+use std::fmt;
 
- use crate::bindings::backend::{CodeType, Literal, TypeIdentifier, LanguageOracle, StringReturn};
- use super::legacy_kt;
+use super::legacy_kt;
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, StringReturn, TypeIdentifier};
 
 pub struct FallbackCodeType {
     type_: TypeIdentifier,
 }
 
 impl FallbackCodeType {
-    pub fn new(type_: TypeIdentifier) -> Self { Self { type_ } }
+    pub fn new(type_: TypeIdentifier) -> Self {
+        Self { type_ }
+    }
 }
 
 impl CodeType for FallbackCodeType {
@@ -32,7 +34,8 @@ impl CodeType for FallbackCodeType {
         legacy_kt::lower_kt(nm, &self.type_).unwrap()
     }
 
-    fn write(&self,
+    fn write(
+        &self,
         _oracle: &dyn LanguageOracle,
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,

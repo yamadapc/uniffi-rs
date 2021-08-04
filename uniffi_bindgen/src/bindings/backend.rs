@@ -52,7 +52,12 @@ pub trait CodeType {
     ///
     /// Where possible, this delegates to a `write()` method on the type itself, but special
     /// handling is required for some compound data types.
-    fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> StringReturn;
+    fn write(
+        &self,
+        oracle: &dyn LanguageOracle,
+        nm: &dyn fmt::Display,
+        target: &dyn fmt::Display,
+    ) -> StringReturn;
 
     /// Get a Kotlin expression for lifting a value from something we received over the FFI.
     ///
@@ -70,7 +75,7 @@ pub trait CodeType {
         None
     }
 
-    fn import_code(&self,  _oracle: &dyn LanguageOracle) -> Option<String> {
+    fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         None
     }
 }
@@ -78,7 +83,7 @@ pub trait CodeType {
 pub trait MemberDeclaration {
     fn type_identifier(&self) -> TypeIdentifier;
 
-    fn import_code(&self,  _oracle: &dyn LanguageOracle) -> Option<String> {
+    fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         None
     }
 
