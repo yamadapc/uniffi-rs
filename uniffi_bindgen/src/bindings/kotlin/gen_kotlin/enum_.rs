@@ -53,7 +53,7 @@ impl CodeType for EnumCodeType {
     }
 
     fn helper_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
-        Some(format!("// {} Arrived!", self.type_label(oracle)))
+        Some(format!("// Helper code for {} enum is found in EnumTemplate.kt", self.type_label(oracle)))
     }
 }
 
@@ -62,17 +62,16 @@ impl CodeType for EnumCodeType {
 #[template(syntax = "kt", escape = "none", path = "EnumTemplate.kt")]
 pub struct KotlinEnum {
     inner: Enum,
+    contains_unsigned_types: bool,
     contains_object_references: bool,
-    type_id: TypeIdentifier,
 }
 
 impl KotlinEnum {
     pub fn new(inner:Enum, ci: &ComponentInterface) -> Self {
-        let type_id = TypeIdentifier::Enum(inner.name().into());
         Self {
+            contains_unsigned_types: inner.contains_unsigned_types(ci),
+            contains_object_references: inner.contains_object_references(ci),
             inner,
-            contains_object_references: ci.type_contains_object_references(&type_id),
-            type_id,
         }
     }
     pub fn inner(&self) -> &Enum {
@@ -81,11 +80,14 @@ impl KotlinEnum {
     pub fn contains_object_references(&self) -> bool {
         self.contains_object_references
     }
+    pub fn contains_unsigned_types(&self) -> bool {
+        self.contains_unsigned_types
+    }
 }
 
 impl MemberDeclaration for KotlinEnum {
     fn type_identifier(&self) -> TypeIdentifier {
-        self.type_id.clone()
+        TypeIdentifier::Enum(self.inner.name().into())
     }
 
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {

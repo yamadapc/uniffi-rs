@@ -47,7 +47,7 @@
      }
 
      fn helper_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
-         Some(format!("// {} Arrived!", self.type_label(oracle)))
+        Some(format!("// Helper code for {} class is found in ObjectTemplate.kt", self.type_label(oracle)))
      }
  }
 

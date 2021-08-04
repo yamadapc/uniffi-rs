@@ -36,7 +36,7 @@ enum class {{ e.name()|class_name_kt }} {
 
 {% else %}
 
-{% call kt::unsigned_types_annotation(e) %}
+{% call kt::unsigned_types_annotation_1(self) %}
 sealed class {{ e.name()|class_name_kt }}{% if self.contains_object_references() %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
