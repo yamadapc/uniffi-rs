@@ -5,7 +5,7 @@
 use std::fmt;
 
 use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier};
-use crate::interface::Enum;
+use crate::interface::{ComponentInterface, Enum};
 use askama::Template;
 
 use super::filters;
@@ -14,7 +14,9 @@ pub struct EnumCodeType {
 }
 
 impl EnumCodeType {
-    pub fn new(id: String) -> Self { Self { id } }
+    pub fn new(id: String) -> Self {
+        Self { id }
+    }
 }
 
 impl CodeType for EnumCodeType {
@@ -59,19 +61,31 @@ impl CodeType for EnumCodeType {
 #[derive(Template)]
 #[template(syntax = "kt", escape = "none", path = "EnumTemplate.kt")]
 pub struct KotlinEnum {
-    pub inner: Enum
+    inner: Enum,
+    contains_object_references: bool,
+    type_id: TypeIdentifier,
 }
 
 impl KotlinEnum {
-    pub fn new(inner:Enum) -> Self { Self { inner } }
+    pub fn new(inner:Enum, ci: &ComponentInterface) -> Self {
+        let type_id = TypeIdentifier::Enum(inner.name().into());
+        Self {
+            inner,
+            contains_object_references: ci.type_contains_object_references(&type_id),
+            type_id,
+        }
+    }
     pub fn inner(&self) -> &Enum {
         &self.inner
+    }
+    pub fn contains_object_references(&self) -> bool {
+        self.contains_object_references
     }
 }
 
 impl MemberDeclaration for KotlinEnum {
     fn type_identifier(&self) -> TypeIdentifier {
-        TypeIdentifier::Enum(self.inner.name().into())
+        self.type_id.clone()
     }
 
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {

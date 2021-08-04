@@ -5,7 +5,7 @@
  use std::fmt;
 
  use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier};
- use crate::interface::Object;
+ use crate::interface::{ComponentInterface, Object};
  use askama::Template;
 
  use super::filters;
@@ -55,22 +55,22 @@
  #[derive(Template)]
  #[template(syntax = "kt", escape = "none", path = "ObjectTemplate.kt")]
  pub struct KotlinObject {
-     pub inner: Object
+    inner: Object
  }
 
  impl KotlinObject {
-     pub fn new(inner: Object) -> Self { Self { inner } }
-     pub fn inner(&self) -> &Object {
-         &self.inner
-     }
+    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self { Self { inner } }
+    pub fn inner(&self) -> &Object {
+        &self.inner
+    }
  }
 
  impl MemberDeclaration for KotlinObject {
-     fn type_identifier(&self) -> TypeIdentifier {
-         TypeIdentifier::Object(self.inner.name().into())
-     }
+    fn type_identifier(&self) -> TypeIdentifier {
+        TypeIdentifier::Object(self.inner.name().into())
+    }
 
-     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
-         Some(self.render().unwrap())
-     }
+    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+        Some(self.render().unwrap())
+    }
  }

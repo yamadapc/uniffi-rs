@@ -48,39 +48,37 @@
 
  lazy_static::lazy_static! {
     static ref HELPER_CODE: String = r#"
-    internal class StringInternals {
-        companion object {
-            fun lower(s: String): RustBuffer.ByValue {
-                val byteArr = s.toByteArray(Charsets.UTF_8)
-                // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
-                // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.
-                val rbuf = RustBuffer.alloc(byteArr.size)
-                rbuf.asByteBuffer()!!.put(byteArr)
-                return rbuf
-            }
+    internal object StringInternals {
+        fun lower(s: String): RustBuffer.ByValue {
+            val byteArr = s.toByteArray(Charsets.UTF_8)
+            // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
+            // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.
+            val rbuf = RustBuffer.alloc(byteArr.size)
+            rbuf.asByteBuffer()!!.put(byteArr)
+            return rbuf
+        }
 
-            fun write(s: String, buf: RustBufferBuilder) {
-                val byteArr = s.toByteArray(Charsets.UTF_8)
-                buf.putInt(byteArr.size)
-                buf.put(byteArr)
-            }
+        fun write(s: String, buf: RustBufferBuilder) {
+            val byteArr = s.toByteArray(Charsets.UTF_8)
+            buf.putInt(byteArr.size)
+            buf.put(byteArr)
+        }
 
-            fun lift(rbuf: RustBuffer.ByValue): String {
-                try {
-                    val byteArr = ByteArray(rbuf.len)
-                    rbuf.asByteBuffer()!!.get(byteArr)
-                    return byteArr.toString(Charsets.UTF_8)
-                } finally {
-                    RustBuffer.free(rbuf)
-                }
-            }
-
-            fun read(buf: ByteBuffer): String {
-                val len = buf.getInt()
-                val byteArr = ByteArray(len)
-                buf.get(byteArr)
+        fun lift(rbuf: RustBuffer.ByValue): String {
+            try {
+                val byteArr = ByteArray(rbuf.len)
+                rbuf.asByteBuffer()!!.get(byteArr)
                 return byteArr.toString(Charsets.UTF_8)
+            } finally {
+                RustBuffer.free(rbuf)
             }
+        }
+
+        fun read(buf: ByteBuffer): String {
+            val len = buf.getInt()
+            val byteArr = ByteArray(len)
+            buf.get(byteArr)
+            return byteArr.toString(Charsets.UTF_8)
         }
     }
     "#.to_string();

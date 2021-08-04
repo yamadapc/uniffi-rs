@@ -83,16 +83,17 @@ impl<'a> KotlinWrapper<'a> {
     }
 
     pub fn members(&self) -> Vec<Box<dyn MemberDeclaration + 'a>> {
+        let ci = self.ci;
         Vec::new().into_iter().chain(
-            self.ci
+            ci
                 .iter_enum_definitions()
                 .into_iter()
-                .map(|inner| Box::new(enum_::KotlinEnum::new(inner)) as Box<dyn MemberDeclaration>)
+                .map(|inner| Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn MemberDeclaration>)
         ).chain(
-            self.ci
+            ci
                 .iter_object_definitions()
                 .into_iter()
-                .map(|inner| Box::new(object::KotlinObject::new(inner)) as Box<dyn MemberDeclaration>)
+                .map(|inner| Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn MemberDeclaration>)
         ).collect()
     }
 }
