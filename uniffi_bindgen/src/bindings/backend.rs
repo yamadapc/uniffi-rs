@@ -12,7 +12,7 @@ pub type Literal = crate::interface::Literal;
 pub type StringReturn = String;
 
 pub trait LanguageOracle {
-    fn find(&self, type_: &TypeIdentifier) -> Result<Box<dyn CodeType>, askama::Error>;
+    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType>;
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &dyn fmt::Display) -> String;
@@ -39,7 +39,9 @@ pub trait LanguageOracle {
 pub trait CodeType {
     fn type_label(&self, oracle: &dyn LanguageOracle) -> StringReturn;
 
-    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn;
+    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+        self.type_label(oracle)
+    }
 
     fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn;
     /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.

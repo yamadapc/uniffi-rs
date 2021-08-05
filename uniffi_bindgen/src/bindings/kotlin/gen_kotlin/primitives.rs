@@ -64,10 +64,6 @@ macro_rules! impl_code_type_for_primitive {
                     $class_name.into()
                 }
 
-                fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
-                    self.type_label(oracle)
-                }
-
                 fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn {
                     render_literal(oracle, &literal)
                 }

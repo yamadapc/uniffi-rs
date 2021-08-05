@@ -20,6 +20,7 @@ mod fallback;
 mod legacy_kt;
 mod object;
 mod primitives;
+mod compounds;
 mod record;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
@@ -130,14 +131,30 @@ impl KotlinLanguageOracle {
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
+
+            Type::Optional(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::OptionalCodeType::new(inner, outer))
+            },
+            Type::Sequence(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::SequenceCodeType::new(inner, outer))
+            },
+            Type::Map(ref inner) => {
+                let outer = type_.clone();
+                let inner = *inner.to_owned();
+                Box::new(compounds::MapCodeType::new(inner, outer))
+            },
             _ => Box::new(fallback::FallbackCodeType::new(type_)),
         }
     }
 }
 
 impl LanguageOracle for KotlinLanguageOracle {
-    fn find(&self, type_: &TypeIdentifier) -> Result<Box<dyn CodeType>, askama::Error> {
-        Ok(self.create_code_type(type_.clone()))
+    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType> {
+        self.create_code_type(type_.clone())
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
@@ -206,17 +223,22 @@ pub mod filters {
 
     pub fn helper_code(type_: &Type) -> Result<Option<String>, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_)?.helper_code(&oracle))
+        Ok(oracle.find(type_).helper_code(&oracle))
     }
 
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_)?.type_label(&oracle))
+        Ok(oracle.find(type_).type_label(&oracle))
+    }
+
+    pub fn canonical_name(type_: &Type) -> Result<String, askama::Error> {
+        let oracle = oracle();
+        Ok(oracle.find(type_).canonical_name(&oracle))
     }
 
     pub fn lower_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_)?.lower(&oracle, nm))
+        Ok(oracle.find(type_).lower(&oracle, nm))
     }
 
     pub fn write_kt(
@@ -225,12 +247,12 @@ pub mod filters {
         type_: &Type,
     ) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_)?.write(&oracle, nm, target))
+        Ok(oracle.find(type_).write(&oracle, nm, target))
     }
 
     pub fn lift_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_)?.lift(&oracle, nm))
+        Ok(oracle.find(type_).lift(&oracle, nm))
     }
 
     pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
@@ -243,12 +265,12 @@ pub mod filters {
         };
 
         let oracle = oracle();
-        Ok(oracle.find(type_)?.literal(&oracle, literal))
+        Ok(oracle.find(type_).literal(&oracle, literal))
     }
 
     pub fn read_kt(nm: &dyn fmt::Display, type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
-        Ok(oracle.find(type_)?.read(&oracle, nm))
+        Ok(oracle.find(type_).read(&oracle, nm))
     }
 
     /// Get the Kotlin syntax for representing a given low-level `FFIType`.
