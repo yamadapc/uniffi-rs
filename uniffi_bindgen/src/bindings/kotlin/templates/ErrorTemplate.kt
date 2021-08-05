@@ -68,7 +68,7 @@ sealed class {{ toplevel_name }}: Exception(){% if e.contains_object_references(
             is {{ e.name()|class_name_kt }}.{{ variant.name()|class_name_kt }} -> {
                 {% for field in variant.fields() -%}
                     {%- if ci.type_contains_object_references(field.type_()) -%}
-                    this.{{ field.name() }}?.destroy()
+                    this.{{ field.name()|var_name_kt }}?.destroy()
                     {% endif -%}
                 {%- endfor %}
             }

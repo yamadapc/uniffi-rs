@@ -67,14 +67,21 @@ impl CodeType for ObjectCodeType {
 #[template(syntax = "kt", escape = "none", path = "ObjectTemplate.kt")]
 pub struct KotlinObject {
     inner: Object,
+    contains_unsigned_types: bool,
 }
 
 impl KotlinObject {
-    pub fn new(inner: Object, _ci: &ComponentInterface) -> Self {
-        Self { inner }
+    pub fn new(inner: Object, ci: &ComponentInterface) -> Self {
+        Self {
+            contains_unsigned_types: inner.contains_unsigned_types(ci),
+            inner,
+        }
     }
     pub fn inner(&self) -> &Object {
         &self.inner
+    }
+    pub fn contains_unsigned_types(&self) -> bool {
+        self.contains_unsigned_types
     }
 }
 

@@ -81,6 +81,6 @@
 {%- macro destroy_fields(member) %}
     Disposable.destroy(
     {%- for field in member.fields() %}
-        this.{{ field.name() }}{%- if !loop.last %}, {% endif -%}
+        this.{{ field.name()|var_name_kt }}{%- if !loop.last %}, {% endif -%}
     {% endfor -%})
 {%- endmacro -%}
