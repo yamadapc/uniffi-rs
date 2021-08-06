@@ -61,6 +61,18 @@ impl CodeType for ObjectCodeType {
             self.type_label(oracle)
         ))
     }
+
+    fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<Vec<String>> {
+        Some(
+            vec![
+                "java.util.concurrent.atomic.AtomicLong",
+                "java.util.concurrent.atomic.AtomicBoolean",
+            ]
+            .into_iter()
+            .map(|s| s.into())
+            .collect(),
+        )
+    }
 }
 
 #[derive(Template)]

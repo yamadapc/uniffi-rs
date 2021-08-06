@@ -23,11 +23,10 @@ import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+
+{%- for imported_class in self.imports() %}
+import {{ imported_class }}
+{%- endfor %}
 
 // The uniffi runtime.
 {% include "RustBufferTemplate.kt" %}

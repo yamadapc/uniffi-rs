@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::collections::HashSet;
 use std::fmt;
 
 use anyhow::Result;
@@ -78,10 +79,6 @@ pub struct KotlinWrapper<'a> {
 }
 impl<'a> KotlinWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
-        // I _think_ I want to make this the holder of the LanguageOracle, which holds the CI.
-        // I haven't quite worked out if each type's CodeType should be one type (with defintion_code and lift/lower calling)
-        // or two (e.g. enums_::CodeType, enums_::CodeDeclType). a CodeDecl type would be an ideal place to put an askama Template definition,
-        //
         Self {
             config,
             ci,
@@ -126,6 +123,31 @@ impl<'a> KotlinWrapper<'a> {
                     .filter_map(|member| member.initialization_code(oracle)),
             )
             .collect()
+    }
+
+    pub fn imports(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        let mut imports: Vec<String> = Vec::new()
+            .into_iter()
+            .chain(
+                self.members()
+                    .into_iter()
+                    .filter_map(|member| member.import_code(oracle))
+                    .flatten(),
+            )
+            .chain(
+                self.ci
+                    .iter_types()
+                    .into_iter()
+                    .filter_map(|type_| oracle.find(&type_).import_code(oracle))
+                    .flatten(),
+            )
+            .collect::<HashSet<String>>()
+            .into_iter()
+            .collect();
+
+        imports.sort();
+        imports
     }
 }
 

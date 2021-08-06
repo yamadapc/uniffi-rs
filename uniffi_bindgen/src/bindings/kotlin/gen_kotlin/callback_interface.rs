@@ -117,4 +117,16 @@ impl MemberDeclaration for KotlinCallbackInterface {
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
+
+    fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<Vec<String>> {
+        Some(
+            vec![
+                "java.util.concurrent.locks.ReentrantLock",
+                "kotlin.concurrent.withLock",
+            ]
+            .into_iter()
+            .map(|s| s.into())
+            .collect(),
+        )
+    }
 }
