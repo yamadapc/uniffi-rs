@@ -135,22 +135,23 @@ impl KotlinLanguageOracle {
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
+            Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
 
             Type::Optional(ref inner) => {
                 let outer = type_.clone();
                 let inner = *inner.to_owned();
                 Box::new(compounds::OptionalCodeType::new(inner, outer))
-            },
+            }
             Type::Sequence(ref inner) => {
                 let outer = type_.clone();
                 let inner = *inner.to_owned();
                 Box::new(compounds::SequenceCodeType::new(inner, outer))
-            },
+            }
             Type::Map(ref inner) => {
                 let outer = type_.clone();
                 let inner = *inner.to_owned();
                 Box::new(compounds::MapCodeType::new(inner, outer))
-            },
+            }
             _ => Box::new(fallback::FallbackCodeType::new(type_)),
         }
     }

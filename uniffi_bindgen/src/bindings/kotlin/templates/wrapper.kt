@@ -39,7 +39,6 @@ import kotlin.concurrent.withLock
 
 // Public interface members begin here.
 
-
 {% for m in self.members() %}
 {%- match m.definition_code(oracle) %}
 {% when Some with (code) %}

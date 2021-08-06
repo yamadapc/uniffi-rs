@@ -2,25 +2,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
- use crate::bindings::backend::{CodeType, LanguageOracle, Literal, StringReturn, TypeIdentifier};
- use askama::Template;
- use paste::paste;
- use std::fmt;
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, StringReturn, TypeIdentifier};
+use askama::Template;
+use paste::paste;
+use std::fmt;
 
- #[allow(unused_imports)]
- use super::filters;
+#[allow(unused_imports)]
+use super::filters;
 
- fn render_literal(_oracle: &dyn LanguageOracle, literal: &Literal) -> String {
-     match literal {
+fn render_literal(_oracle: &dyn LanguageOracle, literal: &Literal) -> String {
+    match literal {
         Literal::Null => "null".into(),
         Literal::EmptySequence => "listOf()".into(),
         Literal::EmptyMap => "mapOf".into(),
 
-         _ => unreachable!("Literal"),
-     }
- }
+        _ => unreachable!("Literal"),
+    }
+}
 
- macro_rules! impl_code_type_for_compound {
+macro_rules! impl_code_type_for_compound {
      ($T:ty, $type_label_pattern:literal, $canonical_name_pattern: literal, $helper_code:literal) => {
         paste! {
             #[derive(Template)]
@@ -79,7 +79,7 @@
     }
  }
 
- impl_code_type_for_compound!(
+impl_code_type_for_compound!(
     OptionalCodeType,
     "{}?",
     "Optional{}",
@@ -122,7 +122,7 @@
         return {{ "buf"|read_kt(inner_type) }}
     }
  "#
- );
+);
 
 impl_code_type_for_compound!(
     SequenceCodeType,
@@ -157,14 +157,15 @@ impl_code_type_for_compound!(
         }
     }
 
-    @ExperimentalUnsignedTypess
+    @ExperimentalUnsignedTypes
     internal fun read{{ canonical_type_name }}(buf: ByteBuffer): List<{{ inner_type_name }}> {
         val len = buf.getInt()
         return List<{{ inner_type_name }}>(len) {
             {{ "buf"|read_kt(inner_type) }}
         }
     }
-"#);
+"#
+);
 
 impl_code_type_for_compound!(
     MapCodeType,
@@ -215,4 +216,5 @@ impl_code_type_for_compound!(
         }
         return items
     }
-"#);
+"#
+);

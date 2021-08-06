@@ -27,7 +27,6 @@
 }
 {%- endmacro %}
 
-
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
         {{- arg.name()|lower_kt(arg.type_()) }}
