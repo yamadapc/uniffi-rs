@@ -40,6 +40,13 @@ macro_rules! impl_code_type_for_compound {
                 fn outer(&self) -> &TypeIdentifier {
                     &self.outer
                 }
+                fn contains_unsigned_types(&self) -> bool {
+                    // XXX We're unable to lookup the concrete interface::type from the self.innner type
+                    // because we don't have access to the ComponentInterface.
+                    // So we err on the side of caution and say true. This is reflected in
+                    // ComponentInterface.type_contains_unsigned_types(typ: &Type).
+                    true
+                }
             }
 
             impl CodeType for $T  {
@@ -84,20 +91,21 @@ impl_code_type_for_compound!(
     "{}?",
     "Optional{}",
     r#"
+    {%- import "macros.kt" as kt -%}
     {%- let inner_type = self.inner() %}
     {%- let outer_type = self.outer() %}
     {%- let inner_type_name = inner_type|type_kt %}
     {%- let canonical_type_name = outer_type|canonical_name %}
 
-    // Helper functions for pasing values of type {{ outer_type|type_kt }}
-    @ExperimentalUnsignedTypes
+    // Helper functions for passing values of type {{ outer_type|type_kt }}
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun lower{{ canonical_type_name }}(v: {{ inner_type_name }}?): RustBuffer.ByValue {
         return lowerIntoRustBuffer(v) { v, buf ->
             write{{ canonical_type_name }}(v, buf)
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun write{{ canonical_type_name }}(v: {{ inner_type_name }}?, buf: RustBufferBuilder) {
         if (v == null) {
             buf.putByte(0)
@@ -107,14 +115,14 @@ impl_code_type_for_compound!(
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ inner_type_name }}? {
         return liftFromRustBuffer(rbuf) { buf ->
             read{{ canonical_type_name }}(buf)
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ inner_type_name }}? {
         if (buf.get().toInt() == 0) {
             return null
@@ -129,20 +137,21 @@ impl_code_type_for_compound!(
     "List<{}>",
     "Sequence{}",
     r#"
+    {%- import "macros.kt" as kt -%}
     {%- let inner_type = self.inner() %}
     {%- let outer_type = self.outer() %}
     {%- let inner_type_name = inner_type|type_kt %}
     {%- let canonical_type_name = outer_type|canonical_name %}
 
-    // Helper functions for pasing values of type {{ outer_type|type_kt }}
-    @ExperimentalUnsignedTypes
+    // Helper functions for passing values of type {{ outer_type|type_kt }}
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun lower{{ canonical_type_name }}(v: List<{{ inner_type_name }}>): RustBuffer.ByValue {
         return lowerIntoRustBuffer(v) { v, buf ->
             write{{ canonical_type_name }}(v, buf)
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun write{{ canonical_type_name }}(v: List<{{ inner_type_name }}>, buf: RustBufferBuilder) {
         buf.putInt(v.size)
         v.forEach {
@@ -150,14 +159,14 @@ impl_code_type_for_compound!(
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): List<{{ inner_type_name }}> {
         return liftFromRustBuffer(rbuf) { buf ->
             read{{ canonical_type_name }}(buf)
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun read{{ canonical_type_name }}(buf: ByteBuffer): List<{{ inner_type_name }}> {
         val len = buf.getInt()
         return List<{{ inner_type_name }}>(len) {
@@ -172,20 +181,21 @@ impl_code_type_for_compound!(
     "Map<String, {}>",
     "Map{}",
     r#"
+    {%- import "macros.kt" as kt -%}
     {%- let inner_type = self.inner() %}
     {%- let outer_type = self.outer() %}
     {%- let inner_type_name = inner_type|type_kt %}
     {%- let canonical_type_name = outer_type|canonical_name %}
 
-    // Helper functions for pasing values of type {{ outer_type|type_kt }}
-    @ExperimentalUnsignedTypes
+    // Helper functions for passing values of type {{ outer_type|type_kt }}
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun lower{{ canonical_type_name }}(m: Map<String, {{ inner_type_name }}>): RustBuffer.ByValue {
         return lowerIntoRustBuffer(m) { m, buf ->
             write{{ canonical_type_name }}(m, buf)
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun write{{ canonical_type_name }}(v: Map<String, {{ inner_type_name }}>, buf: RustBufferBuilder) {
         buf.putInt(v.size)
         // The parens on `(k, v)` here ensure we're calling the right method,
@@ -197,14 +207,14 @@ impl_code_type_for_compound!(
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): Map<String, {{ inner_type_name }}> {
         return liftFromRustBuffer(rbuf) { buf ->
             read{{ canonical_type_name }}(buf)
         }
     }
 
-    @ExperimentalUnsignedTypes
+    {% call kt::unsigned_types_annotation_1(self) %}
     internal fun read{{ canonical_type_name }}(buf: ByteBuffer): Map<String, {{ inner_type_name }}> {
         // TODO: Once Kotlin's `buildMap` API is stabilized we should use it here.
         val items : MutableMap<String, {{ inner_type_name }}> = mutableMapOf()
