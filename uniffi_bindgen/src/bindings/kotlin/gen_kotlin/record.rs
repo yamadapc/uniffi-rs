@@ -5,7 +5,7 @@
 use std::fmt;
 
 use crate::bindings::backend::{
-    CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier,
+    CodeType, LanguageOracle, Literal, MemberDeclaration, TypeIdentifier,
 };
 use crate::interface::{ComponentInterface, Record};
 use askama::Template;
@@ -22,19 +22,19 @@ impl RecordCodeType {
 }
 
 impl CodeType for RecordCodeType {
-    fn type_label(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+    fn type_label(&self, oracle: &dyn LanguageOracle) -> String {
         oracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> String {
         format!("Record{}", self.type_label(oracle))
     }
 
-    fn literal(&self, _oracle: &dyn LanguageOracle, _literal: &Literal) -> StringReturn {
+    fn literal(&self, _oracle: &dyn LanguageOracle, _literal: &Literal) -> String {
         unreachable!();
     }
 
-    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.lower()", oracle.var_name(nm))
     }
 
@@ -43,15 +43,15 @@ impl CodeType for RecordCodeType {
         oracle: &dyn LanguageOracle,
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
-    ) -> StringReturn {
+    ) -> String {
         format!("{}.write({})", oracle.var_name(nm), target)
     }
 
-    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.lift({})", self.type_label(oracle), nm)
     }
 
-    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
 

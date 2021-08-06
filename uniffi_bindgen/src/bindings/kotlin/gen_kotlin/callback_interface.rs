@@ -5,7 +5,7 @@
 use std::fmt;
 
 use crate::bindings::backend::{
-    CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier,
+    CodeType, LanguageOracle, Literal, MemberDeclaration, TypeIdentifier,
 };
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
@@ -26,19 +26,19 @@ impl CallbackInterfaceCodeType {
 }
 
 impl CodeType for CallbackInterfaceCodeType {
-    fn type_label(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+    fn type_label(&self, oracle: &dyn LanguageOracle) -> String {
         oracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> String {
         format!("CallbackInterface{}", self.type_label(oracle))
     }
 
-    fn literal(&self, _oracle: &dyn LanguageOracle, _literal: &Literal) -> StringReturn {
+    fn literal(&self, _oracle: &dyn LanguageOracle, _literal: &Literal) -> String {
         unreachable!();
     }
 
-    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.lower({})", self.internals(oracle), oracle.var_name(nm))
     }
 
@@ -47,7 +47,7 @@ impl CodeType for CallbackInterfaceCodeType {
         oracle: &dyn LanguageOracle,
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
-    ) -> StringReturn {
+    ) -> String {
         format!(
             "{}.write({}, {})",
             self.internals(oracle),
@@ -56,7 +56,7 @@ impl CodeType for CallbackInterfaceCodeType {
         )
     }
 
-    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!(
             "{}.lift({}, {})",
             self.internals(oracle),
@@ -65,7 +65,7 @@ impl CodeType for CallbackInterfaceCodeType {
         )
     }
 
-    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!(
             "{}.read({}, {})",
             self.internals(oracle),

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::backend::{CodeType, LanguageOracle, Literal, StringReturn};
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal};
 use crate::interface::{types::Type, Radix};
 use askama::Template;
 use paste::paste;
@@ -60,27 +60,27 @@ macro_rules! impl_code_type_for_primitive {
             pub struct $T;
 
             impl CodeType for $T  {
-                fn type_label(&self, _oracle: &dyn LanguageOracle) -> StringReturn {
+                fn type_label(&self, _oracle: &dyn LanguageOracle) -> String {
                     $class_name.into()
                 }
 
-                fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn {
+                fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> String {
                     render_literal(oracle, &literal)
                 }
 
-                fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+                fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
                     format!("{}.lower()", oracle.var_name(nm))
                 }
 
-                fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> StringReturn {
+                fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
                     format!("{}.write({})", oracle.var_name(nm), target)
                 }
 
-                fn lift(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+                fn lift(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
                     format!("{}.lift({})", $class_name, nm)
                 }
 
-                fn read(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+                fn read(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
                     format!("{}.read({})", $class_name, nm)
                 }
 

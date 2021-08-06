@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::backend::{CodeType, LanguageOracle, Literal, StringReturn, TypeIdentifier};
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, TypeIdentifier};
 use askama::Template;
 use paste::paste;
 use std::fmt;
@@ -55,31 +55,31 @@ macro_rules! impl_code_type_for_compound {
             }
 
             impl CodeType for $T  {
-                fn type_label(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+                fn type_label(&self, oracle: &dyn LanguageOracle) -> String {
                     format!($type_label_pattern, oracle.find(self.inner()).type_label(oracle))
                 }
 
-                fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+                fn canonical_name(&self, oracle: &dyn LanguageOracle) -> String {
                     format!($canonical_name_pattern, oracle.find(self.inner()).canonical_name(oracle))
                 }
 
-                fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn {
+                fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> String {
                     render_literal(oracle, &literal, self.inner())
                 }
 
-                fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+                fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
                     format!("lower{}({})", self.canonical_name(oracle), oracle.var_name(nm))
                 }
 
-                fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> StringReturn {
+                fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
                     format!("write{}({}, {})", self.canonical_name(oracle), oracle.var_name(nm), target)
                 }
 
-                fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+                fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
                     format!("lift{}({})", self.canonical_name(oracle), nm)
                 }
 
-                fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+                fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
                     format!("read{}({})", self.canonical_name(oracle), nm)
                 }
 

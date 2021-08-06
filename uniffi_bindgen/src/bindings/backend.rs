@@ -8,9 +8,6 @@ use std::fmt;
 pub type TypeIdentifier = Type;
 pub type Literal = crate::interface::Literal;
 
-// Placeholder return type, while we do refactoring.
-pub type StringReturn = String;
-
 pub trait LanguageOracle {
     fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType>;
 
@@ -37,18 +34,18 @@ pub trait LanguageOracle {
 }
 
 pub trait CodeType {
-    fn type_label(&self, oracle: &dyn LanguageOracle) -> StringReturn;
+    fn type_label(&self, oracle: &dyn LanguageOracle) -> String;
 
-    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> String {
         self.type_label(oracle)
     }
 
-    fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn;
+    fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> String;
     /// Get a Kotlin expression for lowering a value into something we can pass over the FFI.
     ///
     /// Where possible, this delegates to a `lower()` method on the type itself, but special
     /// handling is required for some compound data types.
-    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn;
+    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String;
 
     /// Get a Kotlin expression for writing a value into a byte buffer.
     ///
@@ -59,19 +56,19 @@ pub trait CodeType {
         oracle: &dyn LanguageOracle,
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
-    ) -> StringReturn;
+    ) -> String;
 
     /// Get a Kotlin expression for lifting a value from something we received over the FFI.
     ///
     /// Where possible, this delegates to a `lift()` method on the type itself, but special
     /// handling is required for some compound data types.
-    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn;
+    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String;
 
     /// Get a Kotlin expression for reading a value from a byte buffer.
     ///
     /// Where possible, this delegates to a `read()` method on the type itself, but special
     /// handling is required for some compound data types.
-    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn;
+    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String;
 
     fn helper_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         None

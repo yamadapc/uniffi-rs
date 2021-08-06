@@ -5,7 +5,7 @@
 use std::fmt;
 
 use crate::bindings::backend::{
-    CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier,
+    CodeType, LanguageOracle, Literal, MemberDeclaration, TypeIdentifier,
 };
 use crate::interface::{ComponentInterface, Enum};
 use askama::Template;
@@ -22,15 +22,15 @@ impl EnumCodeType {
 }
 
 impl CodeType for EnumCodeType {
-    fn type_label(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+    fn type_label(&self, oracle: &dyn LanguageOracle) -> String {
         oracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> StringReturn {
+    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> String {
         format!("Enum{}", self.type_label(oracle))
     }
 
-    fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn {
+    fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> String {
         if let Literal::Enum(v, _) = literal {
             format!("{}.{}", self.type_label(oracle), oracle.enum_variant(v))
         } else {
@@ -38,7 +38,7 @@ impl CodeType for EnumCodeType {
         }
     }
 
-    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.lower()", oracle.var_name(nm))
     }
 
@@ -47,15 +47,15 @@ impl CodeType for EnumCodeType {
         oracle: &dyn LanguageOracle,
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
-    ) -> StringReturn {
+    ) -> String {
         format!("{}.write({})", oracle.var_name(nm), target)
     }
 
-    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.lift({})", self.type_label(oracle), nm)
     }
 
-    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
+    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
 
