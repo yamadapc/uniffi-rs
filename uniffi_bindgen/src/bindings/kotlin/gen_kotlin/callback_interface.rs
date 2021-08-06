@@ -7,7 +7,7 @@ use std::fmt;
 use crate::bindings::backend::{
     CodeType, LanguageOracle, Literal, MemberDeclaration, StringReturn, TypeIdentifier,
 };
-use crate::interface::{ComponentInterface, CallbackInterface};
+use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
 use super::filters;
@@ -48,15 +48,30 @@ impl CodeType for CallbackInterfaceCodeType {
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
     ) -> StringReturn {
-        format!("{}.write({}, {})", self.internals(oracle), oracle.var_name(nm), target)
+        format!(
+            "{}.write({}, {})",
+            self.internals(oracle),
+            oracle.var_name(nm),
+            target
+        )
     }
 
     fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
-        format!("{}.lift({}, {})", self.internals(oracle), self.type_label(oracle), nm)
+        format!(
+            "{}.lift({}, {})",
+            self.internals(oracle),
+            self.type_label(oracle),
+            nm
+        )
     }
 
     fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {
-        format!("{}.read({}, {})", self.internals(oracle), self.type_label(oracle), nm)
+        format!(
+            "{}.read({}, {})",
+            self.internals(oracle),
+            self.type_label(oracle),
+            nm
+        )
     }
 
     fn helper_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
@@ -96,9 +111,7 @@ impl MemberDeclaration for KotlinCallbackInterface {
 
     fn initialization_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
         let code_type = CallbackInterfaceCodeType::new(self.inner.name().into());
-        Some(
-            format!("{}.register(lib)", code_type.internals(oracle))
-        )
+        Some(format!("{}.register(lib)", code_type.internals(oracle)))
     }
 
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {

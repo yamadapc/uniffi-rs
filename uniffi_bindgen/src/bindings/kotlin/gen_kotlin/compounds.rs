@@ -10,7 +10,11 @@ use std::fmt;
 #[allow(unused_imports)]
 use super::filters;
 
-fn render_literal(oracle: &dyn LanguageOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
+fn render_literal(
+    oracle: &dyn LanguageOracle,
+    literal: &Literal,
+    inner: &TypeIdentifier,
+) -> String {
     match literal {
         Literal::Null => "null".into(),
         Literal::EmptySequence => "listOf()".into(),

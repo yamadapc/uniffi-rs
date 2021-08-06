@@ -2,15 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
- use crate::bindings::backend::{CodeType, LanguageOracle, Literal, StringReturn};
- use askama::Template;
- use paste::paste;
- use std::fmt;
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, StringReturn};
+use askama::Template;
+use paste::paste;
+use std::fmt;
 
- #[allow(unused_imports)]
- use super::filters;
+#[allow(unused_imports)]
+use super::filters;
 
- macro_rules! impl_code_type_for_miscellany {
+macro_rules! impl_code_type_for_miscellany {
      ($T:ty, $class_name:literal, $canonical_name:literal, $imports:expr, $helper_code:literal) => {
          paste! {
              #[derive(Template)]
@@ -56,12 +56,12 @@
      }
  }
 
- impl_code_type_for_miscellany!(
-     TimestampCodeType,
-     "java.time.Instant",
-     "Timestamp",
-     vec!["java.time.Instant", "java.time.DateTimeException"],
-     r#"
+impl_code_type_for_miscellany!(
+    TimestampCodeType,
+    "java.time.Instant",
+    "Timestamp",
+    vec!["java.time.Instant", "java.time.DateTimeException"],
+    r#"
      internal fun liftTimestamp(rbuf: RustBuffer.ByValue): java.time.Instant {
          return liftFromRustBuffer(rbuf) { buf ->
              readTimestamp(buf)
@@ -108,9 +108,9 @@
          buf.putInt(epochOffset.nano)
      }
  "#
- );
+);
 
- impl_code_type_for_miscellany!(
+impl_code_type_for_miscellany!(
     DurationCodeType,
     "java.time.Duration",
     "Duration",
