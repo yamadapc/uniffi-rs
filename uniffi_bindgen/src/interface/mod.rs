@@ -283,6 +283,10 @@ impl<'ci> ComponentInterface {
                 .get_enum_definition(name)
                 .map(|e| e.contains_unsigned_types(&self))
                 .unwrap_or(false),
+            Type::CallbackInterface(name) => self
+                .get_callback_interface_definition(name)
+                .map(|cbi| cbi.contains_unsigned_types(&self))
+                .unwrap_or(false),
             _ => false,
         }
     }

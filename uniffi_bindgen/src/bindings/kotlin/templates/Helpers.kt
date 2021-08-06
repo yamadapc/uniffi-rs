@@ -219,7 +219,7 @@ interface ForeignCallback : com.sun.jna.Callback {
 internal const val IDX_CALLBACK_FREE = 0
 
 internal abstract class CallbackInternals<CallbackInterface>(
-    val foreignCallback: ForeignCallback
+    protected val foreignCallback: ForeignCallback
 ) {
     val handleMap = ConcurrentHandleMap<CallbackInterface>()
 

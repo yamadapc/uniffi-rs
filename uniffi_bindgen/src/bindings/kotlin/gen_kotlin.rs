@@ -15,6 +15,7 @@ use crate::MergeWith;
 
 use crate::bindings::backend::{CodeType, LanguageOracle, TypeIdentifier};
 
+mod callback_interface;
 mod compounds;
 mod enum_;
 mod error;
@@ -105,6 +106,9 @@ impl<'a> KotlinWrapper<'a> {
             .chain(ci.iter_error_definitions().into_iter().map(|inner| {
                 Box::new(error::KotlinError::new(inner, ci)) as Box<dyn MemberDeclaration>
             }))
+            .chain(ci.iter_callback_interface_definitions().into_iter().map(|inner| {
+                Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci)) as Box<dyn MemberDeclaration>
+            }))
             .collect()
     }
 }
@@ -136,6 +140,7 @@ impl KotlinLanguageOracle {
             Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
             Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
+            Type::CallbackInterface(id) => Box::new(callback_interface::CallbackInterfaceCodeType::new(id)),
 
             Type::Optional(ref inner) => {
                 let outer = type_.clone();

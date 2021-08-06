@@ -82,6 +82,13 @@ impl CallbackInterface {
         }];
         self.ffi_init_callback.return_type = None;
     }
+
+    // We need to check both methods and constructor
+    pub fn contains_unsigned_types(&self, ci: &ComponentInterface) -> bool {
+        self.methods()
+            .iter()
+            .any(|&meth| meth.contains_unsigned_types(&ci))
+    }
 }
 
 impl Hash for CallbackInterface {

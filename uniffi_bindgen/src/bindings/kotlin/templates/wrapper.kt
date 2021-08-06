@@ -52,9 +52,4 @@ import kotlin.concurrent.withLock
 {% include "TopLevelFunctionTemplate.kt" %}
 {% endfor %}
 
-// Callback Interfaces
-{% for cbi in ci.iter_callback_interface_definitions() %}
-{% include "CallbackInterfaceTemplate.kt" %}
-{% endfor %}
-
 {% import "macros.kt" as kt %}
