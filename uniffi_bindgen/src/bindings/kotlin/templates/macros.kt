@@ -84,3 +84,9 @@
         this.{{ field.name()|var_name_kt }}{%- if !loop.last %}, {% endif -%}
     {% endfor -%})
 {%- endmacro -%}
+
+{%- macro ffi_function_definition(func) %}
+fun {{ func.name() }}(
+    {%- call arg_list_ffi_decl(func) %}
+){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|type_ffi }}{% when None %}: Unit{% endmatch %}
+{% endmacro %}
