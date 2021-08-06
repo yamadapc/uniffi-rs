@@ -111,6 +111,14 @@ impl<'a> KotlinWrapper<'a> {
             }))
             .collect()
     }
+
+    pub fn initialization_code(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        Vec::new()
+            .into_iter()
+            .chain(self.members().into_iter().filter_map(|member| member.initialization_code(oracle)))
+            .collect()
+    }
 }
 
 #[derive(Default)]

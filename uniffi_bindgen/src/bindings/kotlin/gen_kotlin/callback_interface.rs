@@ -94,6 +94,13 @@ impl MemberDeclaration for KotlinCallbackInterface {
         TypeIdentifier::CallbackInterface(self.inner.name().into())
     }
 
+    fn initialization_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
+        let code_type = CallbackInterfaceCodeType::new(self.inner.name().into());
+        Some(
+            format!("{}.register(lib)", code_type.internals(oracle))
+        )
+    }
+
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
