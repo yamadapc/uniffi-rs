@@ -15,12 +15,13 @@ use crate::MergeWith;
 
 use crate::bindings::backend::{CodeType, LanguageOracle, TypeIdentifier};
 
+mod compounds;
 mod enum_;
+mod error;
 mod fallback;
 mod legacy_kt;
 mod object;
 mod primitives;
-mod compounds;
 mod record;
 
 // Some config options for it the caller wants to customize the generated Kotlin.
@@ -100,6 +101,9 @@ impl<'a> KotlinWrapper<'a> {
             }))
             .chain(ci.iter_record_definitions().into_iter().map(|inner| {
                 Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn MemberDeclaration>
+            }))
+            .chain(ci.iter_error_definitions().into_iter().map(|inner| {
+                Box::new(error::KotlinError::new(inner, ci)) as Box<dyn MemberDeclaration>
             }))
             .collect()
     }

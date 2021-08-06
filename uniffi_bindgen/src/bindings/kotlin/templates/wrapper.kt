@@ -48,9 +48,6 @@ import kotlin.concurrent.withLock
 {% endmatch %}
 {%- endfor -%}
 
-// Error definitions
-{% include "ErrorTemplate.kt" %}
-
 // Namespace functions
 {% for func in ci.iter_function_definitions() %}
 {% include "TopLevelFunctionTemplate.kt" %}

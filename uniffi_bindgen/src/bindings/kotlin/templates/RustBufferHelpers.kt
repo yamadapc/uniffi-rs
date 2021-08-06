@@ -133,18 +133,12 @@ internal fun write{{ canonical_type_name }}(v: {{ type_name }}, buf: RustBufferB
     buf.putInt(v.nano)
 }
 
-{% when Type::Record with (record_name) -%}
-{# Helpers for Record types are defined inline with the Record class #}
-
-{% when Type::Object with (object_name) -%}
-{# Object types cannot be lifted, lowered or serialized (yet) #}
-
 {% when Type::CallbackInterface with (interface_name) -%}
 {# Helpers for Callback Interface types are defined inline with the CallbackInterface class #}
 
 {% else %}
 {# This type cannot be lifted, lowered or serialized (yet) #}
-
+// XXX Type {{ typ|type_kt }} is in use, but not handled.
 {%- endmatch %}
 {%- endmatch %}
 
