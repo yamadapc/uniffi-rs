@@ -125,6 +125,24 @@ impl<'a> KotlinWrapper<'a> {
             .collect()
     }
 
+    pub fn declaration_code(&self) -> Vec<String> {
+        let oracle = &self.oracle;
+        Vec::new()
+            .into_iter()
+            .chain(
+                self.members()
+                    .into_iter()
+                    .filter_map(|member| member.definition_code(oracle)),
+            )
+            .chain(
+                self.ci
+                    .iter_types()
+                    .into_iter()
+                    .filter_map(|type_| oracle.find(&type_).helper_code(oracle)),
+            )
+            .collect()
+    }
+
     pub fn imports(&self) -> Vec<String> {
         let oracle = &self.oracle;
         let mut imports: Vec<String> = Vec::new()

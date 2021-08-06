@@ -36,26 +36,9 @@ import {{ imported_class }}
 {% include "NamespaceLibraryTemplate.kt" %}
 
 // Public interface members begin here.
-
-{% for m in self.members() %}
-{%- match m.definition_code(oracle) %}
-{% when Some with (code) %}
+{% for code in self.declaration_code() %}
 {{ code }}
-{% else -%}
-{% endmatch %}
-{%- endfor -%}
-
-
-// For every type used in the interface, we provide helper methods for conveniently
-// lifting and lowering that type from C-compatible data, and for reading and writing
-// values of that type in a buffer.
-{% for typ in ci.iter_types() %}
-{%- match typ|helper_code %}
-{%- when Some with (code) %}
-{{ code }}
-{%- else %}
-{%- endmatch %}
-{% endfor %}
+{%- endfor %}
 
 // Namespace functions
 {% for func in ci.iter_function_definitions() %}
