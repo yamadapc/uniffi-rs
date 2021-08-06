@@ -268,9 +268,14 @@ impl<'ci> ComponentInterface {
     pub fn type_contains_unsigned_types(&self, type_: &Type) -> bool {
         match type_ {
             Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => true,
-            Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => {
-                self.type_contains_unsigned_types(t)
-            }
+            // XXX we can't map from Type to ci in gen_kotlin/compound/*CodeType,
+            // so we decalre all these compound types as containing unsigned types.
+            // The need for this annotation is going away soon as unsigned types
+            // stabilize in Kotlin.
+            // Type::Optional(t) | Type::Sequence(t) | Type::Map(t) => {
+            //     self.type_contains_unsigned_types(t)
+            // }
+            Type::Optional(_) | Type::Sequence(_) | Type::Map(_) => true,
             Type::Object(t) => self
                 .get_object_definition(t)
                 .map(|obj| obj.contains_unsigned_types(&self))
