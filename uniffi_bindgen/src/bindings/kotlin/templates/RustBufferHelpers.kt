@@ -37,55 +37,6 @@ internal fun<T> lowerIntoRustBuffer(v: T, writeItem: (T, RustBufferBuilder) -> U
 {% let canonical_type_name = typ.canonical_name()|class_name_kt %}
 {%- match typ -%}
 
-{% when Type::Timestamp -%}
-{% let type_name = typ|type_kt %}
-
-internal fun lift{{ canonical_type_name }}(rbuf: RustBuffer.ByValue): {{ type_name }} {
-    return liftFromRustBuffer(rbuf) { buf ->
-        read{{ canonical_type_name }}(buf)
-    }
-}
-
-internal fun read{{ canonical_type_name }}(buf: ByteBuffer): {{ type_name }} {
-    val seconds = buf.getLong()
-    // Type mismatch (should be u32) but we check for overflow/underflow below
-    val nanoseconds = buf.getInt().toLong()
-    if (nanoseconds < 0) {
-        throw java.time.DateTimeException("Instant nanoseconds exceed minimum or maximum supported by uniffi")
-    }
-    if (seconds >= 0) {
-        return {{ type_name }}.EPOCH.plus(java.time.Duration.ofSeconds(seconds, nanoseconds))
-    } else {
-        return {{ type_name }}.EPOCH.minus(java.time.Duration.ofSeconds(-seconds, nanoseconds))
-    }
-}
-
-internal fun lower{{ canonical_type_name }}(v: {{ type_name }}): RustBuffer.ByValue {
-    return lowerIntoRustBuffer(v) { v, buf ->
-        write{{ canonical_type_name }}(v, buf)
-    }
-}
-
-internal fun write{{ canonical_type_name }}(v: {{ type_name }}, buf: RustBufferBuilder) {
-    var epoch_offset = java.time.Duration.between({{ type_name }}.EPOCH, v)
-
-    var sign = 1
-    if (epoch_offset.isNegative()) {
-        sign = -1
-        epoch_offset = epoch_offset.negated()
-    }
-
-    if (epoch_offset.nano < 0) {
-        // Java docs provide guarantee that nano will always be positive, so this should be impossible
-        // See: https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html
-        throw IllegalArgumentException("Invalid timestamp, nano value must be non-negative")
-    }
-
-    buf.putLong(sign * epoch_offset.seconds)
-    // Type mismatch (should be u32) but since values will always be between 0 and 999,999,999 it should be OK
-    buf.putInt(epoch_offset.nano)
-}
-
 {% when Type::Duration -%}
 {% let type_name = typ|type_kt %}
 

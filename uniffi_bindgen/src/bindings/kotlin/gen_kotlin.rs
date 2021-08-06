@@ -21,6 +21,7 @@ mod enum_;
 mod error;
 mod fallback;
 mod legacy_kt;
+mod miscellany;
 mod object;
 mod primitives;
 mod record;
@@ -143,6 +144,9 @@ impl KotlinLanguageOracle {
             Type::Float64 => Box::new(primitives::Float64CodeType),
             Type::Boolean => Box::new(primitives::BooleanCodeType),
             Type::String => Box::new(primitives::StringCodeType),
+
+            Type::Timestamp => Box::new(miscellany::TimestampCodeType),
+            Type::Duration => Box::new(miscellany::DurationCodeType),
 
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             Type::Object(id) => Box::new(object::ObjectCodeType::new(id)),

@@ -77,7 +77,7 @@ pub trait CodeType {
         None
     }
 
-    fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+    fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<Vec<String>> {
         None
     }
 }
