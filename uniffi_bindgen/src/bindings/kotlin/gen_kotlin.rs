@@ -19,8 +19,6 @@ mod callback_interface;
 mod compounds;
 mod enum_;
 mod error;
-mod fallback;
-mod legacy_kt;
 mod miscellany;
 mod object;
 mod primitives;
@@ -169,7 +167,6 @@ impl KotlinLanguageOracle {
                 let inner = *inner.to_owned();
                 Box::new(compounds::MapCodeType::new(inner, outer))
             }
-            _ => Box::new(fallback::FallbackCodeType::new(type_)),
         }
     }
 }
@@ -277,15 +274,7 @@ pub mod filters {
         Ok(oracle.find(type_).lift(&oracle, nm))
     }
 
-    pub fn literal_kt(literal: &Literal) -> Result<String, askama::Error> {
-        let type_ = match literal {
-            Literal::Enum(_, type_) => type_,
-            Literal::Int(_, _, type_) => type_,
-            Literal::UInt(_, _, type_) => type_,
-            Literal::Float(_, type_) => type_,
-            _ => return legacy_kt::literal_kt(literal),
-        };
-
+    pub fn literal_kt(literal: &Literal, type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
         Ok(oracle.find(type_).literal(&oracle, literal))
     }

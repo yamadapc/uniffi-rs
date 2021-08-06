@@ -41,9 +41,10 @@
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_kt }}: {{ arg.type_()|type_kt -}}
+        {% let arg_type = arg.type_() -%}
+        {{ arg.name()|var_name_kt }}: {{ arg_type|type_kt -}}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt }}
+        {%- when Some with(literal) %} = {{ literal|literal_kt(arg_type) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}

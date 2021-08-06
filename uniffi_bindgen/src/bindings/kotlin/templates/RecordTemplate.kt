@@ -3,9 +3,10 @@
 {% call kt::unsigned_types_annotation_1(self) %}
 data class {{ rec.name()|class_name_kt }} (
     {%- for field in rec.fields() %}
-    var {{ field.name()|var_name_kt }}: {{ field.type_()|type_kt -}}
+    {%- let field_type = field.type_() %}
+    var {{ field.name()|var_name_kt }}: {{ field_type|type_kt -}}
     {%- match field.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_kt }}
+        {%- when Some with(literal) %} = {{ literal|literal_kt(field_type) }}
         {%- else %}
     {%- endmatch -%}
     {% if !loop.last %}, {% endif %}

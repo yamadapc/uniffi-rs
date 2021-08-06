@@ -10,13 +10,14 @@ use std::fmt;
 #[allow(unused_imports)]
 use super::filters;
 
-fn render_literal(_oracle: &dyn LanguageOracle, literal: &Literal) -> String {
+fn render_literal(oracle: &dyn LanguageOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
     match literal {
         Literal::Null => "null".into(),
         Literal::EmptySequence => "listOf()".into(),
         Literal::EmptyMap => "mapOf".into(),
 
-        _ => unreachable!("Literal"),
+        // For optionals
+        _ => oracle.find(inner).literal(oracle, literal),
     }
 }
 
@@ -59,7 +60,7 @@ macro_rules! impl_code_type_for_compound {
                 }
 
                 fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> StringReturn {
-                    render_literal(oracle, &literal)
+                    render_literal(oracle, &literal, self.inner())
                 }
 
                 fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> StringReturn {

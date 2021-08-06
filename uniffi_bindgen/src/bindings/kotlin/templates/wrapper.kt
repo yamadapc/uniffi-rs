@@ -29,13 +29,12 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
+// The uniffi runtime.
 {% include "RustBufferTemplate.kt" %}
 
-{% include "RustBufferHelpers.kt" %}
+{% include "Helpers.kt" %}
 
 {% include "NamespaceLibraryTemplate.kt" %}
-
-{% include "Helpers.kt" %}
 
 // Public interface members begin here.
 
@@ -43,9 +42,21 @@ import kotlin.concurrent.withLock
 {%- match m.definition_code(oracle) %}
 {% when Some with (code) %}
 {{ code }}
-{% else %}
+{% else -%}
 {% endmatch %}
 {%- endfor -%}
+
+
+// For every type used in the interface, we provide helper methods for conveniently
+// lifting and lowering that type from C-compatible data, and for reading and writing
+// values of that type in a buffer.
+{% for typ in ci.iter_types() %}
+{%- match typ|helper_code %}
+{%- when Some with (code) %}
+{{ code }}
+{%- else %}
+{%- endmatch %}
+{% endfor %}
 
 // Namespace functions
 {% for func in ci.iter_function_definitions() %}
