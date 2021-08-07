@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration};
+use crate::bindings::backend::{CodeDeclaration, CodeType, LanguageOracle, Literal};
 use crate::interface::{ComponentInterface, Record};
 use askama::Template;
 
@@ -88,7 +88,7 @@ impl KotlinRecord {
     }
 }
 
-impl MemberDeclaration for KotlinRecord {
+impl CodeDeclaration for KotlinRecord {
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         Some(self.render().unwrap())
     }

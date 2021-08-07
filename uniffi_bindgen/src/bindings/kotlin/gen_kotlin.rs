@@ -10,7 +10,7 @@ use askama::Template;
 use heck::{CamelCase, MixedCase, ShoutySnakeCase};
 use serde::{Deserialize, Serialize};
 
-use crate::bindings::backend::MemberDeclaration;
+use crate::bindings::backend::CodeDeclaration;
 use crate::interface::*;
 use crate::MergeWith;
 
@@ -87,37 +87,39 @@ impl<'a> KotlinWrapper<'a> {
         }
     }
 
-    pub fn members(&self) -> Vec<Box<dyn MemberDeclaration + 'a>> {
+    pub fn members(&self) -> Vec<Box<dyn CodeDeclaration + 'a>> {
         let ci = self.ci;
         vec![
-            Box::new(object::KotlinObjectRuntime::new(ci)) as Box<dyn MemberDeclaration>,
+            Box::new(object::KotlinObjectRuntime::new(ci)) as Box<dyn CodeDeclaration>,
             Box::new(callback_interface::KotlinCallbackInterfaceRuntime::new(ci))
-                as Box<dyn MemberDeclaration>,
+                as Box<dyn CodeDeclaration>,
         ]
         .into_iter()
         .chain(
             ci.iter_enum_definitions().into_iter().map(|inner| {
-                Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn MemberDeclaration>
+                Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn CodeDeclaration>
             }),
         )
         .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-            Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn MemberDeclaration>
+            Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn CodeDeclaration>
         }))
         .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-            Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn MemberDeclaration>
+            Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn CodeDeclaration>
         }))
         .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-            Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn MemberDeclaration>
+            Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn CodeDeclaration>
         }))
-        .chain(ci.iter_error_definitions().into_iter().map(|inner| {
-            Box::new(error::KotlinError::new(inner, ci)) as Box<dyn MemberDeclaration>
-        }))
+        .chain(
+            ci.iter_error_definitions().into_iter().map(|inner| {
+                Box::new(error::KotlinError::new(inner, ci)) as Box<dyn CodeDeclaration>
+            }),
+        )
         .chain(
             ci.iter_callback_interface_definitions()
                 .into_iter()
                 .map(|inner| {
                     Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci))
-                        as Box<dyn MemberDeclaration>
+                        as Box<dyn CodeDeclaration>
                 }),
         )
         .collect()

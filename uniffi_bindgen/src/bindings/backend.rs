@@ -110,7 +110,7 @@ pub trait CodeType {
 /// code at start-up of the FFI.
 /// All methods are optional, and there is no requirement that the trait be used for a particular
 /// `interface::` member. Thus, it can also be useful for conditionally rendering code.
-pub trait MemberDeclaration {
+pub trait CodeDeclaration {
     /// A list of imports that are needed if this type is in use.
     /// Classes are imported exactly once.
     fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<Vec<String>> {

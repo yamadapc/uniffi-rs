@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration};
+use crate::bindings::backend::{CodeDeclaration, CodeType, LanguageOracle, Literal};
 use crate::interface::{ComponentInterface, Object};
 use askama::Template;
 
@@ -95,7 +95,7 @@ impl KotlinObject {
     }
 }
 
-impl MemberDeclaration for KotlinObject {
+impl CodeDeclaration for KotlinObject {
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
@@ -115,7 +115,7 @@ impl KotlinObjectRuntime {
     }
 }
 
-impl MemberDeclaration for KotlinObjectRuntime {
+impl CodeDeclaration for KotlinObjectRuntime {
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         if self.is_needed {
             Some(self.render().unwrap())
