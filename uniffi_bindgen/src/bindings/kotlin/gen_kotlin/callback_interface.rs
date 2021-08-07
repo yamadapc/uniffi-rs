@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{CodeDeclaration, CodeType, LanguageOracle, Literal};
+use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
@@ -18,31 +18,31 @@ impl CallbackInterfaceCodeType {
         Self { id }
     }
 
-    fn internals(&self, oracle: &dyn LanguageOracle) -> String {
+    fn internals(&self, oracle: &dyn CodeOracle) -> String {
         format!("{}Internals", self.canonical_name(oracle))
     }
 }
 
 impl CodeType for CallbackInterfaceCodeType {
-    fn type_label(&self, oracle: &dyn LanguageOracle) -> String {
+    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
         oracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> String {
+    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
         format!("CallbackInterface{}", self.type_label(oracle))
     }
 
-    fn literal(&self, _oracle: &dyn LanguageOracle, _literal: &Literal) -> String {
+    fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
         unreachable!();
     }
 
-    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.lower({})", self.internals(oracle), oracle.var_name(nm))
     }
 
     fn write(
         &self,
-        oracle: &dyn LanguageOracle,
+        oracle: &dyn CodeOracle,
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
     ) -> String {
@@ -54,7 +54,7 @@ impl CodeType for CallbackInterfaceCodeType {
         )
     }
 
-    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
         format!(
             "{}.lift({}, {})",
             self.internals(oracle),
@@ -63,7 +63,7 @@ impl CodeType for CallbackInterfaceCodeType {
         )
     }
 
-    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
         format!(
             "{}.read({}, {})",
             self.internals(oracle),
@@ -72,7 +72,7 @@ impl CodeType for CallbackInterfaceCodeType {
         )
     }
 
-    fn helper_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
+    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
             "// Helper code for {} callback interface is found in CallbackInterfaceTemplate.kt",
             self.type_label(oracle)
@@ -103,12 +103,12 @@ impl KotlinCallbackInterface {
 }
 
 impl CodeDeclaration for KotlinCallbackInterface {
-    fn initialization_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
+    fn initialization_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         let code_type = CallbackInterfaceCodeType::new(self.inner.name().into());
         Some(format!("{}.register(lib)", code_type.internals(oracle)))
     }
 
-    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
 }
@@ -128,7 +128,7 @@ impl KotlinCallbackInterfaceRuntime {
 }
 
 impl CodeDeclaration for KotlinCallbackInterfaceRuntime {
-    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         if self.is_needed {
             Some(self.render().unwrap())
         } else {
@@ -136,7 +136,7 @@ impl CodeDeclaration for KotlinCallbackInterfaceRuntime {
         }
     }
 
-    fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<Vec<String>> {
+    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
         Some(
             vec![
                 "java.util.concurrent.locks.ReentrantLock",

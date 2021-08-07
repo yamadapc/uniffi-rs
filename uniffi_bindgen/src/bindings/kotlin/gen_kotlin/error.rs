@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{CodeDeclaration, CodeType, LanguageOracle, Literal};
+use crate::bindings::backend::{CodeDeclaration, CodeOracle, CodeType, Literal};
 use crate::interface::{ComponentInterface, Error};
 use askama::Template;
 
@@ -20,40 +20,40 @@ impl ErrorCodeType {
 }
 
 impl CodeType for ErrorCodeType {
-    fn type_label(&self, oracle: &dyn LanguageOracle) -> String {
+    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
         oracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, oracle: &dyn LanguageOracle) -> String {
+    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
         format!("Error{}", self.type_label(oracle))
     }
 
-    fn literal(&self, _oracle: &dyn LanguageOracle, _literal: &Literal) -> String {
+    fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
         unreachable!();
     }
 
-    fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+    fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.lower()", oracle.var_name(nm))
     }
 
     fn write(
         &self,
-        oracle: &dyn LanguageOracle,
+        oracle: &dyn CodeOracle,
         nm: &dyn fmt::Display,
         target: &dyn fmt::Display,
     ) -> String {
         format!("{}.write({})", oracle.var_name(nm), target)
     }
 
-    fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+    fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.lift({})", self.type_label(oracle), nm)
     }
 
-    fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+    fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
         format!("{}.read({})", self.type_label(oracle), nm)
     }
 
-    fn helper_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
+    fn helper_code(&self, oracle: &dyn CodeOracle) -> Option<String> {
         Some(format!(
             "// Helper code for {} error is found in ErrorTemplate.kt",
             self.type_label(oracle)
@@ -84,7 +84,7 @@ impl KotlinError {
 }
 
 impl CodeDeclaration for KotlinError {
-    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+    fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
 }

@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::backend::{CodeType, LanguageOracle, Literal, TypeIdentifier};
+use crate::bindings::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
 use askama::Template;
 use paste::paste;
 use std::fmt;
@@ -10,11 +10,7 @@ use std::fmt;
 #[allow(unused_imports)]
 use super::filters;
 
-fn render_literal(
-    oracle: &dyn LanguageOracle,
-    literal: &Literal,
-    inner: &TypeIdentifier,
-) -> String {
+fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
     match literal {
         Literal::Null => "null".into(),
         Literal::EmptySequence => "listOf()".into(),
@@ -55,35 +51,35 @@ macro_rules! impl_code_type_for_compound {
             }
 
             impl CodeType for $T  {
-                fn type_label(&self, oracle: &dyn LanguageOracle) -> String {
+                fn type_label(&self, oracle: &dyn CodeOracle) -> String {
                     format!($type_label_pattern, oracle.find(self.inner()).type_label(oracle))
                 }
 
-                fn canonical_name(&self, oracle: &dyn LanguageOracle) -> String {
+                fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
                     format!($canonical_name_pattern, oracle.find(self.inner()).canonical_name(oracle))
                 }
 
-                fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> String {
+                fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
                     render_literal(oracle, &literal, self.inner())
                 }
 
-                fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+                fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
                     format!("lower{}({})", self.canonical_name(oracle), oracle.var_name(nm))
                 }
 
-                fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
+                fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
                     format!("write{}({}, {})", self.canonical_name(oracle), oracle.var_name(nm), target)
                 }
 
-                fn lift(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+                fn lift(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
                     format!("lift{}({})", self.canonical_name(oracle), nm)
                 }
 
-                fn read(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+                fn read(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
                     format!("read{}({})", self.canonical_name(oracle), nm)
                 }
 
-                fn helper_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+                fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
                     Some(self.render().unwrap())
                 }
             }

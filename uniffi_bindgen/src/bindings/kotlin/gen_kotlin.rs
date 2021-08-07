@@ -14,7 +14,7 @@ use crate::bindings::backend::CodeDeclaration;
 use crate::interface::*;
 use crate::MergeWith;
 
-use crate::bindings::backend::{CodeType, LanguageOracle, TypeIdentifier};
+use crate::bindings::backend::{CodeOracle, CodeType, TypeIdentifier};
 
 mod callback_interface;
 mod compounds;
@@ -76,7 +76,7 @@ impl MergeWith for Config {
 pub struct KotlinWrapper<'a> {
     config: Config,
     ci: &'a ComponentInterface,
-    oracle: KotlinLanguageOracle,
+    oracle: KotlinCodeOracle,
 }
 impl<'a> KotlinWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
@@ -182,14 +182,14 @@ impl<'a> KotlinWrapper<'a> {
 }
 
 #[derive(Default)]
-pub struct KotlinLanguageOracle;
+pub struct KotlinCodeOracle;
 
-impl KotlinLanguageOracle {
+impl KotlinCodeOracle {
     fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
         // I really want access to the ComponentInterface here so I can look up the interface::{Enum, Record, Error, Object, etc}
         // However, there's some violence and gore I need to do to (temporarily) make the oracle usable from filters.
 
-        // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn LanguageOracle
+        // Some refactor of the templates is needed to make progress here: I think most of the filter functions need to take an &dyn CodeOracle
         match type_ {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),
             Type::Int8 => Box::new(primitives::Int8CodeType),
@@ -234,7 +234,7 @@ impl KotlinLanguageOracle {
     }
 }
 
-impl LanguageOracle for KotlinLanguageOracle {
+impl CodeOracle for KotlinCodeOracle {
     fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType> {
         self.create_code_type(type_.clone())
     }
@@ -299,8 +299,8 @@ pub mod filters {
     use super::*;
     use std::fmt;
 
-    fn oracle() -> impl LanguageOracle {
-        KotlinLanguageOracle
+    fn oracle() -> impl CodeOracle {
+        KotlinCodeOracle
     }
 
     pub fn helper_code(type_: &Type) -> Result<Option<String>, askama::Error> {

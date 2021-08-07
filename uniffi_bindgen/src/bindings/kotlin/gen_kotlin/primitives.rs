@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::backend::{CodeType, LanguageOracle, Literal};
+use crate::bindings::backend::{CodeOracle, CodeType, Literal};
 use crate::interface::{types::Type, Radix};
 use askama::Template;
 use paste::paste;
@@ -11,7 +11,7 @@ use std::fmt;
 #[allow(unused_imports)]
 use super::filters;
 
-fn render_literal(_oracle: &dyn LanguageOracle, literal: &Literal) -> String {
+fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
     fn typed_number(type_: &Type, num_str: String) -> String {
         match type_ {
             // Bytes, Shorts and Ints can all be inferred from the type.
@@ -60,31 +60,31 @@ macro_rules! impl_code_type_for_primitive {
             pub struct $T;
 
             impl CodeType for $T  {
-                fn type_label(&self, _oracle: &dyn LanguageOracle) -> String {
+                fn type_label(&self, _oracle: &dyn CodeOracle) -> String {
                     $class_name.into()
                 }
 
-                fn literal(&self, oracle: &dyn LanguageOracle, literal: &Literal) -> String {
+                fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
                     render_literal(oracle, &literal)
                 }
 
-                fn lower(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+                fn lower(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
                     format!("{}.lower()", oracle.var_name(nm))
                 }
 
-                fn write(&self, oracle: &dyn LanguageOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
+                fn write(&self, oracle: &dyn CodeOracle, nm: &dyn fmt::Display, target: &dyn fmt::Display) -> String {
                     format!("{}.write({})", oracle.var_name(nm), target)
                 }
 
-                fn lift(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+                fn lift(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
                     format!("{}.lift({})", $class_name, nm)
                 }
 
-                fn read(&self, _oracle: &dyn LanguageOracle, nm: &dyn fmt::Display) -> String {
+                fn read(&self, _oracle: &dyn CodeOracle, nm: &dyn fmt::Display) -> String {
                     format!("{}.read({})", $class_name, nm)
                 }
 
-                fn helper_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+                fn helper_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
                     Some(self.render().unwrap())
                 }
             }
