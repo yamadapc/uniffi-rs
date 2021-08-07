@@ -55,7 +55,7 @@ impl CodeType for ErrorCodeType {
 
     fn helper_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
         Some(format!(
-            "// Helper code for {} enum is found in ErrorTemplate.kt",
+            "// Helper code for {} error is found in ErrorTemplate.kt",
             self.type_label(oracle)
         ))
     }
