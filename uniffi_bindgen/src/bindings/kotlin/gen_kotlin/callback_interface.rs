@@ -117,6 +117,34 @@ impl MemberDeclaration for KotlinCallbackInterface {
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
+}
+
+#[derive(Template)]
+#[template(syntax = "kt", escape = "none", path = "CallbackInterfaceRuntime.kt")]
+pub struct KotlinCallbackInterfaceRuntime {
+    is_needed: bool,
+}
+
+impl KotlinCallbackInterfaceRuntime {
+    pub fn new(ci: &ComponentInterface) -> Self {
+        Self {
+            is_needed: !ci.iter_callback_interface_definitions().is_empty(),
+        }
+    }
+}
+
+impl MemberDeclaration for KotlinCallbackInterfaceRuntime {
+    fn type_identifier(&self) -> TypeIdentifier {
+        unreachable!("Runtime code is not a member")
+    }
+
+    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+        if self.is_needed {
+            Some(self.render().unwrap())
+        } else {
+            None
+        }
+    }
 
     fn import_code(&self, _oracle: &dyn LanguageOracle) -> Option<Vec<String>> {
         Some(

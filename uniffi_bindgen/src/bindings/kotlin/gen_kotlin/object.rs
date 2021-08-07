@@ -106,3 +106,31 @@ impl MemberDeclaration for KotlinObject {
         Some(self.render().unwrap())
     }
 }
+
+#[derive(Template)]
+#[template(syntax = "kt", escape = "none", path = "ObjectRuntime.kt")]
+pub struct KotlinObjectRuntime {
+    is_needed: bool,
+}
+
+impl KotlinObjectRuntime {
+    pub fn new(ci: &ComponentInterface) -> Self {
+        Self {
+            is_needed: !ci.iter_object_definitions().is_empty(),
+        }
+    }
+}
+
+impl MemberDeclaration for KotlinObjectRuntime {
+    fn type_identifier(&self) -> TypeIdentifier {
+        unreachable!("Runtime code is not a member")
+    }
+
+    fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
+        if self.is_needed {
+            Some(self.render().unwrap())
+        } else {
+            None
+        }
+    }
+}

@@ -89,32 +89,38 @@ impl<'a> KotlinWrapper<'a> {
 
     pub fn members(&self) -> Vec<Box<dyn MemberDeclaration + 'a>> {
         let ci = self.ci;
-        Vec::new()
-            .into_iter()
-            .chain(ci.iter_enum_definitions().into_iter().map(|inner| {
+        vec![
+            Box::new(object::KotlinObjectRuntime::new(ci)) as Box<dyn MemberDeclaration>,
+            Box::new(callback_interface::KotlinCallbackInterfaceRuntime::new(ci))
+                as Box<dyn MemberDeclaration>,
+        ]
+        .into_iter()
+        .chain(
+            ci.iter_enum_definitions().into_iter().map(|inner| {
                 Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn MemberDeclaration>
-            }))
-            .chain(ci.iter_function_definitions().into_iter().map(|inner| {
-                Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn MemberDeclaration>
-            }))
-            .chain(ci.iter_object_definitions().into_iter().map(|inner| {
-                Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn MemberDeclaration>
-            }))
-            .chain(ci.iter_record_definitions().into_iter().map(|inner| {
-                Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn MemberDeclaration>
-            }))
-            .chain(ci.iter_error_definitions().into_iter().map(|inner| {
-                Box::new(error::KotlinError::new(inner, ci)) as Box<dyn MemberDeclaration>
-            }))
-            .chain(
-                ci.iter_callback_interface_definitions()
-                    .into_iter()
-                    .map(|inner| {
-                        Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci))
-                            as Box<dyn MemberDeclaration>
-                    }),
-            )
-            .collect()
+            }),
+        )
+        .chain(ci.iter_function_definitions().into_iter().map(|inner| {
+            Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn MemberDeclaration>
+        }))
+        .chain(ci.iter_object_definitions().into_iter().map(|inner| {
+            Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn MemberDeclaration>
+        }))
+        .chain(ci.iter_record_definitions().into_iter().map(|inner| {
+            Box::new(record::KotlinRecord::new(inner, ci)) as Box<dyn MemberDeclaration>
+        }))
+        .chain(ci.iter_error_definitions().into_iter().map(|inner| {
+            Box::new(error::KotlinError::new(inner, ci)) as Box<dyn MemberDeclaration>
+        }))
+        .chain(
+            ci.iter_callback_interface_definitions()
+                .into_iter()
+                .map(|inner| {
+                    Box::new(callback_interface::KotlinCallbackInterface::new(inner, ci))
+                        as Box<dyn MemberDeclaration>
+                }),
+        )
+        .collect()
     }
 
     pub fn initialization_code(&self) -> Vec<String> {
