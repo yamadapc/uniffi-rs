@@ -4,9 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{
-    CodeType, LanguageOracle, Literal, MemberDeclaration, TypeIdentifier,
-};
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration};
 use crate::interface::{ComponentInterface, Error};
 use askama::Template;
 
@@ -86,10 +84,6 @@ impl KotlinError {
 }
 
 impl MemberDeclaration for KotlinError {
-    fn type_identifier(&self) -> TypeIdentifier {
-        TypeIdentifier::Error(self.inner.name().into())
-    }
-
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         Some(self.render().unwrap())
     }

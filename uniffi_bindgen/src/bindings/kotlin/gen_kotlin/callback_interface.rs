@@ -4,9 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{
-    CodeType, LanguageOracle, Literal, MemberDeclaration, TypeIdentifier,
-};
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration};
 use crate::interface::{CallbackInterface, ComponentInterface};
 use askama::Template;
 
@@ -105,10 +103,6 @@ impl KotlinCallbackInterface {
 }
 
 impl MemberDeclaration for KotlinCallbackInterface {
-    fn type_identifier(&self) -> TypeIdentifier {
-        TypeIdentifier::CallbackInterface(self.inner.name().into())
-    }
-
     fn initialization_code(&self, oracle: &dyn LanguageOracle) -> Option<String> {
         let code_type = CallbackInterfaceCodeType::new(self.inner.name().into());
         Some(format!("{}.register(lib)", code_type.internals(oracle)))
@@ -134,10 +128,6 @@ impl KotlinCallbackInterfaceRuntime {
 }
 
 impl MemberDeclaration for KotlinCallbackInterfaceRuntime {
-    fn type_identifier(&self) -> TypeIdentifier {
-        unreachable!("Runtime code is not a member")
-    }
-
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         if self.is_needed {
             Some(self.render().unwrap())

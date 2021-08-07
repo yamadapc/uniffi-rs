@@ -4,9 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{
-    CodeType, LanguageOracle, Literal, MemberDeclaration, TypeIdentifier,
-};
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration};
 use crate::interface::{ComponentInterface, Object};
 use askama::Template;
 
@@ -98,10 +96,6 @@ impl KotlinObject {
 }
 
 impl MemberDeclaration for KotlinObject {
-    fn type_identifier(&self) -> TypeIdentifier {
-        TypeIdentifier::Object(self.inner.name().into())
-    }
-
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
@@ -122,10 +116,6 @@ impl KotlinObjectRuntime {
 }
 
 impl MemberDeclaration for KotlinObjectRuntime {
-    fn type_identifier(&self) -> TypeIdentifier {
-        unreachable!("Runtime code is not a member")
-    }
-
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         if self.is_needed {
             Some(self.render().unwrap())

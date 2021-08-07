@@ -4,9 +4,7 @@
 
 use std::fmt;
 
-use crate::bindings::backend::{
-    CodeType, LanguageOracle, Literal, MemberDeclaration, TypeIdentifier,
-};
+use crate::bindings::backend::{CodeType, LanguageOracle, Literal, MemberDeclaration};
 use crate::interface::{ComponentInterface, Enum};
 use askama::Template;
 
@@ -95,10 +93,6 @@ impl KotlinEnum {
 }
 
 impl MemberDeclaration for KotlinEnum {
-    fn type_identifier(&self) -> TypeIdentifier {
-        TypeIdentifier::Enum(self.inner.name().into())
-    }
-
     fn definition_code(&self, _oracle: &dyn LanguageOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
