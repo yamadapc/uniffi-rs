@@ -40,9 +40,4 @@ import {{ imported_class }}
 {{ code }}
 {%- endfor %}
 
-// Namespace functions
-{% for func in ci.iter_function_definitions() %}
-{% include "TopLevelFunctionTemplate.kt" %}
-{% endfor %}
-
 {% import "macros.kt" as kt %}

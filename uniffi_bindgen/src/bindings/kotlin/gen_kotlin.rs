@@ -20,6 +20,7 @@ mod callback_interface;
 mod compounds;
 mod enum_;
 mod error;
+mod function;
 mod miscellany;
 mod object;
 mod primitives;
@@ -92,6 +93,9 @@ impl<'a> KotlinWrapper<'a> {
             .into_iter()
             .chain(ci.iter_enum_definitions().into_iter().map(|inner| {
                 Box::new(enum_::KotlinEnum::new(inner, ci)) as Box<dyn MemberDeclaration>
+            }))
+            .chain(ci.iter_function_definitions().into_iter().map(|inner| {
+                Box::new(function::KotlinFunction::new(inner, ci)) as Box<dyn MemberDeclaration>
             }))
             .chain(ci.iter_object_definitions().into_iter().map(|inner| {
                 Box::new(object::KotlinObject::new(inner, ci)) as Box<dyn MemberDeclaration>
