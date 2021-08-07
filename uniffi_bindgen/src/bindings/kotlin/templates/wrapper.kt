@@ -28,11 +28,13 @@ import java.nio.ByteOrder
 import {{ imported_class }}
 {%- endfor %}
 
-// The uniffi runtime.
+// The Rust Buffer and 3 templated methods (alloc, free, reserve).
 {% include "RustBufferTemplate.kt" %}
 
 {% include "Helpers.kt" %}
 
+// Contains loading, initialization code,
+// and the FFI Function declarations in a com.sun.jna.Library.
 {% include "NamespaceLibraryTemplate.kt" %}
 
 // Public interface members begin here.

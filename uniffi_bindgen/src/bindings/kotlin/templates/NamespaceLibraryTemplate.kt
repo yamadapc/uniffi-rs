@@ -1,13 +1,13 @@
 @Synchronized
-fun findLibraryName(componentName: String): String {
-    val libOverride = System.getProperty("uniffi.component.${componentName}.libraryOverride")
+private fun findLibraryName(componentName: String): String {
+    val libOverride = System.getProperty("uniffi.component.$componentName.libraryOverride")
     if (libOverride != null) {
         return libOverride
     }
     return "{{ config.cdylib_name() }}"
 }
 
-inline fun <reified Lib : Library> loadIndirect(
+private inline fun <reified Lib : Library> loadIndirect(
     componentName: String
 ): Lib {
     return Native.load<Lib>(findLibraryName(componentName), Lib::class.java)

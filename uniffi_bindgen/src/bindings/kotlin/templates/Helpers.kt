@@ -118,8 +118,8 @@ abstract class FFIObject(
     protected val pointer: Pointer
 ): Disposable, AutoCloseable {
 
-    val wasDestroyed = AtomicBoolean(false)
-    val callCounter = AtomicLong(1)
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
 
     open protected fun freeRustArcPtr() {
         // To be overridden in subclasses.
