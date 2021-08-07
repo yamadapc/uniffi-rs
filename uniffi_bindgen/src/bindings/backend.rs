@@ -8,7 +8,7 @@ use std::fmt;
 pub type TypeIdentifier = Type;
 pub type Literal = crate::interface::Literal;
 
-/// An object to look up a foreign language code renderer for a given type used.
+/// An object to look up a foreign language code specific renderer for a given type used.
 /// Every `Type` referred to in the `ComponentInterface` should map to a corresponding
 /// `CodeType`.
 ///
@@ -19,19 +19,19 @@ pub type Literal = crate::interface::Literal;
 pub trait CodeOracle {
     fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType>;
 
-    /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
+    /// Get the idiomatic rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &dyn fmt::Display) -> String;
 
-    /// Get the idiomatic Kotlin rendering of a function name.
+    /// Get the idiomatic rendering of a function name.
     fn fn_name(&self, nm: &dyn fmt::Display) -> String;
 
-    /// Get the idiomatic Kotlin rendering of a variable name.
+    /// Get the idiomatic rendering of a variable name.
     fn var_name(&self, nm: &dyn fmt::Display) -> String;
 
-    /// Get the idiomatic Kotlin rendering of an individual enum variant.
+    /// Get the idiomatic rendering of an individual enum variant.
     fn enum_variant(&self, nm: &dyn fmt::Display) -> String;
 
-    /// Get the idiomatic Kotlin rendering of an exception name
+    /// Get the idiomatic rendering of an exception name
     ///
     /// This replaces "Error" at the end of the name with "Exception".  Rust code typically uses
     /// "Error" for any type of error but in the Java world, "Error" means a non-recoverable error
@@ -43,7 +43,7 @@ pub trait CodeOracle {
 
 /// A Trait to emit foreign language code to handle referenced types.
 /// A type which is specified in the UDL (i.e. a member of the component interface)
-/// will have a `MemberDeclaration` as well, but for types used e.g. primitive types, Strings, etc
+/// will have a `CodeDeclaration` as well, but for types used e.g. primitive types, Strings, etc
 /// only a `CodeType` is needed.
 pub trait CodeType {
     /// The language specific label used to reference this type. This will be used in
