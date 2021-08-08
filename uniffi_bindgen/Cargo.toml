@@ -24,4 +24,3 @@ clap = { version = "2", default-features = false }
 paste = "1.0"
 serde = "1"
 toml = "0.5"
-lazy_static = "1.4"

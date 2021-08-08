@@ -303,11 +303,6 @@ pub mod filters {
         KotlinCodeOracle
     }
 
-    pub fn helper_code(type_: &Type) -> Result<Option<String>, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).helper_code(&oracle))
-    }
-
     pub fn type_kt(type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
         Ok(oracle.find(type_).type_label(&oracle))

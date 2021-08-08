@@ -111,6 +111,18 @@ impl CodeDeclaration for KotlinCallbackInterface {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
     }
+
+    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+        Some(
+            vec![
+                "java.util.concurrent.locks.ReentrantLock",
+                "kotlin.concurrent.withLock",
+            ]
+            .into_iter()
+            .map(|s| s.into())
+            .collect(),
+        )
+    }
 }
 
 #[derive(Template)]
@@ -129,22 +141,10 @@ impl KotlinCallbackInterfaceRuntime {
 
 impl CodeDeclaration for KotlinCallbackInterfaceRuntime {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
-        if self.is_needed {
-            Some(self.render().unwrap())
-        } else {
+        if !self.is_needed {
             None
+        } else {
+            Some(self.render().unwrap())
         }
-    }
-
-    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        Some(
-            vec![
-                "java.util.concurrent.locks.ReentrantLock",
-                "kotlin.concurrent.withLock",
-            ]
-            .into_iter()
-            .map(|s| s.into())
-            .collect(),
-        )
     }
 }

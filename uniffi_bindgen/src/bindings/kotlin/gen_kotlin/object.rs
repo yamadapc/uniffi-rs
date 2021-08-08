@@ -59,18 +59,6 @@ impl CodeType for ObjectCodeType {
             self.type_label(oracle)
         ))
     }
-
-    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
-        Some(
-            vec![
-                "java.util.concurrent.atomic.AtomicLong",
-                "java.util.concurrent.atomic.AtomicBoolean",
-            ]
-            .into_iter()
-            .map(|s| s.into())
-            .collect(),
-        )
-    }
 }
 
 #[derive(Template)]
@@ -98,6 +86,18 @@ impl KotlinObject {
 impl CodeDeclaration for KotlinObject {
     fn definition_code(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         Some(self.render().unwrap())
+    }
+
+    fn import_code(&self, _oracle: &dyn CodeOracle) -> Option<Vec<String>> {
+        Some(
+            vec![
+                "java.util.concurrent.atomic.AtomicLong",
+                "java.util.concurrent.atomic.AtomicBoolean",
+            ]
+            .into_iter()
+            .map(|s| s.into())
+            .collect(),
+        )
     }
 }
 
