@@ -1,0 +1,47 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+// Simple example just to see it work.
+// Pass in a string, get a string back.
+// Pass in nothing, get unit back.
+class OnCallAnsweredImpl: OnCallAnswered {
+    var yesCount: Int = 0
+    var busyCount: Int = 0
+    var stringReceived = ""
+
+    override func hello() -> String {
+        yesCount ++
+        return "Hi hi $yesCount"
+    }
+
+    override func busy() {
+        busyCount ++
+    }
+
+    override func textReceived(text: String) {
+        stringReceived = text
+    }
+}
+
+let cbObject = OnCallAnsweredImpl()
+let telephone = Telephone()
+
+telephone.call(true, cbObject)
+assert(cbObject.busyCount == 0) { "yesCount=${cbObject.busyCount} (should be 0)" }
+assert(cbObject.yesCount == 1) { "yesCount=${cbObject.yesCount} (should be 1)" }
+
+telephone.call(true, cbObject)
+assert(cbObject.busyCount == 0) { "yesCount=${cbObject.busyCount} (should be 0)" }
+assert(cbObject.yesCount == 2) { "yesCount=${cbObject.yesCount} (should be 2)" }
+
+telephone.call(false, cbObject)
+assert(cbObject.busyCount == 1) { "yesCount=${cbObject.busyCount} (should be 1)" }
+assert(cbObject.yesCount == 2) { "yesCount=${cbObject.yesCount} (should be 2)" }
+
+let cbObjet2 = OnCallAnsweredImpl()
+telephone.call(true, cbObjet2)
+assert(cbObjet2.busyCount == 0) { "yesCount=${cbObjet2.busyCount} (should be 0)" }
+assert(cbObjet2.yesCount == 1) { "yesCount=${cbObjet2.yesCount} (should be 1)" }
+
+telephone.destroy()

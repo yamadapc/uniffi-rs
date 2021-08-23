@@ -33,4 +33,8 @@ import {{ config.ffi_module_name() }}
 {% include "ObjectTemplate.swift" %}
 {% endfor %}
 
+{% for cbi in ci.iter_callback_interface_definitions() %}
+{% include "CallbackInterfaceTemplate.swift" %}
+{% endfor %}
+
 {% import "macros.swift" as swift %}

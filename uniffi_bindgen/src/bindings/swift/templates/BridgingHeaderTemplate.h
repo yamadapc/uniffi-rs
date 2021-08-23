@@ -35,10 +35,17 @@ typedef struct ForeignBytes
 } ForeignBytes;
 
 // Error definitions
-typedef struct RustCallStatus {
+typedef struct RustCallStatus
+{
     int8_t code;
     RustBuffer errorBuf;
 } RustCallStatus;
+
+typedef struct ForeignCallback
+{
+    void* _Nonnull userdata;
+    const RustBuffer (*_Nonnull invoke)(void* _Nonnull userdata, int method, RustBuffer args);
+} ForeignCallback;
 
 // ⚠️ Attention: If you change this #else block (ending in `#endif // def UNIFFI_SHARED_H`) you *must* ⚠️
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V3 in this file.           ⚠️
